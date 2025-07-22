@@ -1,4 +1,7 @@
 process BCL2FASTQ_local {
+
+    publishDir '/home/lrenteria/inspiired_nf/results/1_demuxed'
+
     input:
     tuple val(meta), path(samplesheet), path(run_dir)
 

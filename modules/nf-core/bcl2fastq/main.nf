@@ -1,9 +1,11 @@
 process BCL2FASTQ {
-    tag {"$meta.lane" ? "$meta.id"+"."+"$meta.lane" : "$meta.id" }
+    //tag {"$meta.lane" ? "$meta.id"+"."+"$meta.lane" : "$meta.id" }
     label 'process_high'
 
-    container "nf-core/bcl2fastq:2.20.0.422"
-
+    //container "nf-core/bcl2fastq:2.20.0.422"
+    container "./bcl2fastq.sif"
+    
+    
     input:
     tuple val(meta), path(samplesheet), path(run_dir)
 
@@ -30,7 +32,19 @@ process BCL2FASTQ {
     def args3 = task.ext.args3 ?: ''
     def input_tar = run_dir.toString().endsWith(".tar.gz") ? true : false
     def input_dir = input_tar ? run_dir.toString() - '.tar.gz' : run_dir
+
     """
+    echo "input directory: ${input_dir}"
+    echo "run directory: ${run_dir}"
+    echo "PWD below!"
+    pwd
+    echo "ls -l 220401_M03894_0295_000000000-KB998/RunInfo.xml:"
+    ls -l 220401_M03894_0295_000000000-KB998/RunInfo.xml
+    echo "Absolute path of input_dir:"
+    readlink -f ${input_dir}
+    pwd .
+
+
     if [ ! -d ${input_dir} ]; then
         mkdir -p ${input_dir}
     fi
@@ -56,12 +70,21 @@ process BCL2FASTQ {
         fi
     fi
 
+    cd ${run_dir} # added this line to be able to access the data
+
+    # changed some parameters to match Patxi's script
     bcl2fastq \\
-        $args \\
-        --output-dir output \\
         --runfolder-dir ${input_dir} \\
-        --sample-sheet ${samplesheet} \\
-        --processing-threads ${task.cpus}
+        --output-dir results \\
+        --use-bases-mask I20Y159,I12,Y143 \\
+        --no-lane-splitting \\
+        --barcode-mismatches 2,2 \\
+        --create-fastq-for-index-reads \\
+        -r 25 \\
+        -p 25 \\
+        -w 25 \\
+        --sample-sheet ${samplesheet}
+       # --processing-threads ${task.cpus}
 
     cp -r ${input_dir}/InterOp .
 

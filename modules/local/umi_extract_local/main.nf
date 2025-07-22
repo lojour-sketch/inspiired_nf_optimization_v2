@@ -1,4 +1,7 @@
 process UMI_EXTRACT_LOCAL {
+   
+    publishDir '/home/lrenteria/inspiired_nf/results/2_extractedumi'
+   
     input:
     tuple val(sample_id), val(linker1), val(linker2), path(reads)
 
