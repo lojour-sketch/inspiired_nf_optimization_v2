@@ -27,7 +27,6 @@ process BCL2FASTQ_local {
         -r 25 \\
         -p 25 \\
         -w 25 \\
-        --barcode-mismatches 2 \\
         #         --processing-threads ${task.cpus}
         #         --sample-sheet ${samplesheet}
         #         --use-bases-mask I20Y159,I12,Y143 \\
