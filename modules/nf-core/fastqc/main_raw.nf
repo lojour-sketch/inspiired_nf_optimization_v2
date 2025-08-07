@@ -1,6 +1,8 @@
-process FASTQC {
+process FASTQC_RAW {
     tag "${meta.id}"
     label 'process_medium'
+
+    publishDir '/home/lrenteria/inspiired_nf/results/3_fastqcraw', mode: 'copy', overwrite: true
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -20,7 +22,7 @@ process FASTQC {
 
     script:
     def args          = task.ext.args ?: ''
-    def prefix        = task.ext.prefix ?: "${meta.id}"
+    def prefix        = task.ext.prefix ?: "${meta.id}_raw"
     // Make list of old name and new name pairs to use for renaming in the bash while loop
     def old_new_pairs = reads instanceof Path || reads.size() == 1 ? [[ reads, "${prefix}.${reads.extension}" ]] : reads.withIndex().collect { entry, index -> [ entry, "${prefix}_${index + 1}.${entry.extension}" ] }
     def rename_to     = old_new_pairs*.join(' ').join(' ')

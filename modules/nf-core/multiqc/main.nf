@@ -1,13 +1,16 @@
 process MULTIQC {
     label 'process_single'
 
+    publishDir '/home/lrenteria/inspiired_nf/results/6_multiqcaftertrim', mode: 'copy', overwrite: true
+
+
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/multiqc:1.30--pyhdfd78af_0' :
         'biocontainers/multiqc:1.30--pyhdfd78af_0' }"
 
     input:
-    path  multiqc_files, stageAs: "?/*"
+    path  multiqc_files
     path(multiqc_config)
     path(extra_multiqc_config)
     path(multiqc_logo)

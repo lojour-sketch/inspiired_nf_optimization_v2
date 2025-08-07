@@ -17,9 +17,10 @@ workflow EXTRACTUMI_wfl {
             tuple(sample_name, file)
         }
         .groupTuple()
-        .view { sample_id, pair -> 
-            "FASTQ pair: ${sample_id} -> ${pair}"
-        }
+
+        // ch_reads_by_sample must have this type of data: D83_CART_d14_S11
+        //for debugging:
+        //ch_reads_by_sample.view { "CH_READS_BY_SAMPLE: ${it}" }
 
     //create channel containing linker sequeces that constrain the UMI sequence
     ch_linkers = Channel
@@ -29,18 +30,10 @@ workflow EXTRACTUMI_wfl {
         tuple(row.sample_id, row.sample_unique_linker, row.common_linker)
     }
 
-    ch_linkers.view { println "ch_linkers: $it" }
-
-
-    //debugging
-    ch_reads_by_sample.view { "READS SAMPLES: ${it[0]}" }
-    ch_linkers
-    .view { id, l1, l2 -> "LINKER tuple: ${id} -> ${l1}, ${l2}" }
-    
-    ch_linkers.view { "LINKERS SAMPLES: ${it[0]}" }
-
-    ch_linkers.view { "Linker full input: ${it}" }
-
+        // ch_linkers must have this type of data: [D81_CART-KO_d07_S4, CGGCTTACAATTCCTGCGAC, CTCCGCTTAAGGGACT]
+        //for debugging:
+        //ch_linkers.view { "CH_LINKERS channel: ${it}" }
+       
 
     //now we combine the reads channel with the linkers channel per sample
     ch_reads_by_sample
@@ -48,18 +41,22 @@ workflow EXTRACTUMI_wfl {
         .map { sample_id, reads, linker1, linker2 ->
                 tuple(sample_id, linker1, linker2, reads)
         }
-        .view { "Reads and linkers joined channel: ${it}"}
         .set { ch_umi_extract_input }
 
+        //ch_umi_extract_input must have this type of data: [D83_CART_d7_S9, GAACGAGCACTAGTAAGCCC, CTCCGCTTAAGGGACT, [/beegfs/home/lrenteria/inspiired_nf/work/5c/2e29e2c2b7ed467ace2fa2d81ffe71/results/alloCART/D83_CART_d7_S9_R1_001.fastq.gz, /beegfs/home/lrenteria/inspiired_nf/work/5c/2e29e2c2b7ed467ace2fa2d81ffe71/results/alloCART/D83_CART_d7_S9_R2_001.fastq.gz]]
+        //for debugging:
+        //ch_umi_extract_input.view{ "CH_UMI_EXTRACT_INPUT: ${it}" }
+
     //now we run the umi extract in only R1 files
-    log.info "\n"
-    log.info "************* Starting UMI extraction ****************"
-    log.info "\n"
     UMI_EXTRACT_LOCAL(ch_umi_extract_input)
 
+    //tupleoutput channel contains: 
     UMI_EXTRACT_LOCAL.out
-    .view { "UMI extraction output: ${it}" }
     .set { ch_umi_fastq }
+
+        //ch_umi_fastq must have this type of data: [D81_CART_d7_S3, /beegfs/home/lrenteria/inspiired_nf/work/bc/c836f1144ba7d6192ad2e569dacecf/D81_CART_d7_S3.umi_R1.fastq.gz, /beegfs/home/lrenteria/inspiired_nf/work/bc/c836f1144ba7d6192ad2e569dacecf/D81_CART_d7_S3.umi_R2.fastq.gz, /beegfs/home/lrenteria/inspiired_nf/work/bc/c836f1144ba7d6192ad2e569dacecf/D81_CART_d7_S3.umi_extract.log]
+        //for debugging:
+        //ch_umi_fastq.view{ "CH_UMI_FASTQ: ${it}" }
 
     emit:
     ch_umi_fastq

@@ -1,12 +1,13 @@
 process UMI_EXTRACT_LOCAL {
    
-    publishDir '/home/lrenteria/inspiired_nf/results/2_extractedumi'
+    publishDir '/home/lrenteria/inspiired_nf/results/2_extractedumi', mode: 'copy', overwrite: true
    
     input:
     tuple val(sample_id), val(linker1), val(linker2), path(reads)
 
     output:
     tuple val(sample_id), path("${sample_id}.umi_R1.fastq.gz"), path("${sample_id}.umi_R2.fastq.gz"), path("${sample_id}.umi_extract.log")
+
 
     script:
     def (r1, r2) = reads

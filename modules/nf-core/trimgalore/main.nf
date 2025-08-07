@@ -2,6 +2,8 @@ process TRIMGALORE {
     tag "${meta.id}"
     label 'process_high'
 
+    publishDir '/home/lrenteria/inspiired_nf/results/4_trimmedfastq_fastqc', mode: 'copy', overwrite: true
+
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
         ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/9b/9becad054093ad4083a961d12733f2a742e11728fe9aa815d678b882b3ede520/data'

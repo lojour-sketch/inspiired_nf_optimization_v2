@@ -1,6 +1,8 @@
 process BCL2FASTQ_local {
 
-    publishDir '/home/lrenteria/inspiired_nf/results/1_demuxed'
+    //we want to save bcl2fastq output in our results/1_demuxed folder 
+    publishDir '/home/lrenteria/inspiired_nf/results/1_demuxed/', pattern: 'results/**/*', mode: 'copy', overwrite: true
+    publishDir '/home/lrenteria/inspiired_nf/results/1_demuxed/', pattern: 'InterOp/*.bin', mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(samplesheet), path(run_dir)
@@ -27,10 +29,11 @@ process BCL2FASTQ_local {
         -r 25 \\
         -p 25 \\
         -w 25 \\
+        --use-bases-mask I20Y159,I12,Y143 \\
         #         --processing-threads ${task.cpus}
         #         --sample-sheet ${samplesheet}
-        #         --use-bases-mask I20Y159,I12,Y143 \\
-
+                 
+    
     cp -r ${run_dir}/InterOp .
 
     cat <<-END_VERSIONS > versions.yml

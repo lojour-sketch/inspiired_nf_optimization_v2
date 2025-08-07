@@ -2,9 +2,10 @@
 // Read QC, UMI extraction and trimming
 //
 
-include { FASTQC           } from '../../../modules/nf-core/fastqc/main'
+include { FASTQC_RAW           } from '../../../modules/nf-core/fastqc/main_raw'
 include { UMITOOLS_EXTRACT } from '../../../modules/nf-core/umitools/extract/main'
 include { TRIMGALORE       } from '../../../modules/nf-core/trimgalore/main'
+include { FASTQC_TRIMMED    } from '../../../modules/nf-core/fastqc/main_trimmed'
 
 //
 // Function that parses TrimGalore log output file to get total number of reads after trimming
@@ -40,10 +41,10 @@ workflow FASTQCANDTRIM_wfl {
     fastqc_html = Channel.empty()
     fastqc_zip = Channel.empty()
     if (!skip_fastqc) {
-        FASTQC(reads)
-        fastqc_html = FASTQC.out.html
-        fastqc_zip = FASTQC.out.zip
-        ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+        FASTQC_RAW(reads)
+        fastqc_html = FASTQC_RAW.out.html
+        fastqc_zip = FASTQC_RAW.out.zip
+        ch_versions = ch_versions.mix(FASTQC_RAW.out.versions.first())
     }
 
     umi_reads = reads
@@ -62,10 +63,8 @@ workflow FASTQCANDTRIM_wfl {
                 }
                 .set { umi_reads }
         }
+    
     }
-
-    //debugging
-    umi_reads.view { "TRIMGALORE input tuple: ${it[0].id}, single_end=${it[0].single_end}, reads=${it[1]}" }
 
     trim_reads = umi_reads
     trim_unpaired = Channel.empty()
@@ -105,12 +104,24 @@ workflow FASTQCANDTRIM_wfl {
         ch_num_trimmed_reads
             .map { meta, _reads, num_reads -> [meta, num_reads] }
             .set { trim_read_count }
+
+    fastqc_html_trimmed = Channel.empty()
+    fastqc_zip_trimmed  = Channel.empty()
+    if (!skip_trimming && !skip_fastqc) {
+        FASTQC_TRIMMED(trim_reads)
+        fastqc_html_trimmed = FASTQC_TRIMMED.out.html
+        fastqc_zip_trimmed  = FASTQC_TRIMMED.out.zip
+        ch_versions = ch_versions.mix(FASTQC_TRIMMED.out.versions.first())
+
     }
+}
 
     emit:
     reads           = trim_reads // channel: [ val(meta), [ reads ] ]
     fastqc_html     // channel: [ val(meta), [ html ] ]
     fastqc_zip      // channel: [ val(meta), [ zip ] ]
+    fastqc_html_trimmed     // channel: [ val(meta), [ html ] ]
+    fastqc_zip_trimmed      // channel: [ val(meta), [ zip ] ]
     umi_log         // channel: [ val(meta), [ log ] ]
     trim_unpaired   // channel: [ val(meta), [ reads ] ]
     trim_html       // channel: [ val(meta), [ html ] ]
@@ -119,3 +130,7 @@ workflow FASTQCANDTRIM_wfl {
     trim_read_count // channel: [ val(meta), val(count) ]
     versions        = ch_versions // channel: [ versions.yml ]
 }
+
+//for debugging
+//      umi_reads must have this type of data: D83_CART_d0_S7, single_end=false, reads=[/beegfs/home/lrenteria/inspiired_nf/work/5e/664d31fe7f6f2e8a6303fe4b0ac925/D83_CART_d0_S7.umi_R1.fastq.gz, /beegfs/home/lrenteria/inspiired_nf/work/5e/664d31fe7f6f2e8a6303fe4b0ac925/D83_CART_d0_S7.umi_R2.fastq.gz]
+//          umi_reads.view { "TRIMGALORE input tuple: ${it[0].id}, single_end=${it[0].single_end}, reads=${it[1]}" }
