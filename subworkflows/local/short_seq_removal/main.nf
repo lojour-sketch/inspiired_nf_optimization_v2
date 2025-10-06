@@ -3,10 +3,13 @@ include { SHORTREMOVE_local } from '../../../modules/local/short_seq_removal_loc
 workflow SHORTREMOVE_wfl{
     take:
     ch_rc_removed
+    ch_primer_ltr
 
     main:
-    SHORTREMOVE_local(ch_rc_removed)
-    SHORTREMOVE_local.out.view{ "Short sequences removed: ${it}" }.set{ ch_short_removed }
+
+    SHORTREMOVE_local(ch_rc_removed, ch_primer_ltr)
+    SHORTREMOVE_local.out.reads.set{ ch_short_removed }
+
 
     emit:
     ch_short_removed

@@ -3,6 +3,7 @@ include { UMI_EXTRACT_LOCAL } from '/home/lrenteria/inspiired_nf/modules/local/u
 workflow EXTRACTUMI_wfl {
     take:
     ch_demux_fastq
+    ch_linkers
 
     main:
     //crete necessary input channel for umi_extract_local
@@ -21,14 +22,6 @@ workflow EXTRACTUMI_wfl {
         // ch_reads_by_sample must have this type of data: D83_CART_d14_S11
         //for debugging:
         //ch_reads_by_sample.view { "CH_READS_BY_SAMPLE: ${it}" }
-
-    //create channel containing linker sequeces that constrain the UMI sequence
-    ch_linkers = Channel
-    .fromPath(params.linkerdata)
-    .splitCsv(header: true)
-    .map { row ->
-        tuple(row.sample_id, row.sample_unique_linker, row.common_linker)
-    }
 
         // ch_linkers must have this type of data: [D81_CART-KO_d07_S4, CGGCTTACAATTCCTGCGAC, CTCCGCTTAAGGGACT]
         //for debugging:

@@ -1,0 +1,9 @@
+name: findvector
+channels:
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - minimap2=2.30
+  - r-biostrings=3.21
+  - r-dplyr=1.1.4
