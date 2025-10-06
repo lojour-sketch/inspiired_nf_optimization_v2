@@ -6,7 +6,8 @@ include { FASTQC_RAW           } from '../../../modules/nf-core/fastqc/main_raw'
 include { UMITOOLS_EXTRACT } from '../../../modules/nf-core/umitools/extract/main'
 include { TRIMGALORE       } from '../../../modules/nf-core/trimgalore/main'
 include { FASTQC_TRIMMED    } from '../../../modules/nf-core/fastqc/main_trimmed'
-
+// added a process to remove N containing sequences, in order to be able to do pairwise alignment later
+include { N_REMOVING } from '../../../modules/local/nremoving_local/main'
 //
 // Function that parses TrimGalore log output file to get total number of reads after trimming
 //
@@ -81,9 +82,20 @@ workflow FASTQCANDTRIM_wfl {
         ch_versions = ch_versions.mix(TRIMGALORE.out.versions.first())
 
         //
-        // Filter FastQ files based on minimum trimmed read count after adapter trimming
+        // Debugging
+        //TRIMGALORE.out.trimmed_reads_N.view { meta, files -> 
+        //    "Trimmed reads with N for sample ${meta}: ${files.join(', ')}"
+        //}
+
+       //TRIMGALORE.out.trimmed_reads_noN.view { meta, files -> 
+        //    "Trimmed reads no N for sample ${meta}: ${files.join(', ')}"
+        //}
+
         //
-        TRIMGALORE.out.reads
+        // Filter FastQ files based on minimum trimmed read count after adapter trimming and N removing
+        //
+
+        TRIMGALORE.out.trimmed_reads
             .join(trim_log, remainder: true)
             .map { meta, reads_, trim_log_ ->
                 if (trim_log) {
@@ -104,6 +116,10 @@ workflow FASTQCANDTRIM_wfl {
         ch_num_trimmed_reads
             .map { meta, _reads, num_reads -> [meta, num_reads] }
             .set { trim_read_count }
+            
+    // Apart from filtering reads with trimgalore we also remove reads that contain Ns. we will later do a FASTQC on these reads
+    N_REMOVING(trim_reads)
+    trim_reads = N_REMOVING.out.reads
 
     fastqc_html_trimmed = Channel.empty()
     fastqc_zip_trimmed  = Channel.empty()

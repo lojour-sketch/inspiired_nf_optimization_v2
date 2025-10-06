@@ -2,7 +2,7 @@ process FASTQC_TRIMMED {
     tag "${meta.id}"
     label 'process_medium'
 
-    publishDir '/home/lrenteria/inspiired_nf/results/5_fastqctrimmed', mode: 'copy', overwrite: true
+    publishDir '/home/lrenteria/inspiired_nf/results/6_fastqctrimmed', mode: 'copy', overwrite: true
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

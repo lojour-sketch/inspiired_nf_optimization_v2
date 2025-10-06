@@ -1,7 +1,7 @@
 process MULTIQC {
     label 'process_single'
 
-    publishDir '/home/lrenteria/inspiired_nf/results/6_multiqcaftertrim', mode: 'copy', overwrite: true
+    publishDir '/home/lrenteria/inspiired_nf/results/7_multiqcaftertrim', mode: 'copy', overwrite: true
 
 
     conda "${moduleDir}/environment.yml"
@@ -35,16 +35,7 @@ process MULTIQC {
     def replace = replace_names ? "--replace-names ${replace_names}" : ''
     def samples = sample_names ? "--sample-names ${sample_names}" : ''
     """
-    multiqc \\
-        --force \\
-        $args \\
-        $config \\
-        $prefix \\
-        $extra_config \\
-        $logo \\
-        $replace \\
-        $samples \\
-        .
+    multiqc --force $args $config $prefix $extra_config $logo $replace $samples .
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
