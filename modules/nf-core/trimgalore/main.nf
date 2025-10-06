@@ -2,7 +2,7 @@ process TRIMGALORE {
     tag "${meta.id}"
     label 'process_high'
 
-    publishDir '/home/lrenteria/inspiired_nf/results/4_trimmedfastq_fastqc', mode: 'copy', overwrite: true
+    publishDir '/home/lrenteria/inspiired_nf/results/4_trimmedfastq_fastqc', mode: 'symlink', overwrite: true
 
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container

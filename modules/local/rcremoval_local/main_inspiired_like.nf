@@ -1,4 +1,4 @@
-process RCremoval_inspiired {
+process RCremoval_inspiired_local {
 
     cpus 12
     cache 'deep'

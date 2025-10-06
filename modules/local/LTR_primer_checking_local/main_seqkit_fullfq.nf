@@ -1,4 +1,4 @@
-process LTRchecking_seqkit {
+process LTRchecking_seqkit_local {
 
     cpus 6
 

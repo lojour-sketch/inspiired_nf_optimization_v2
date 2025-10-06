@@ -1,8 +1,8 @@
 process BCL2FASTQ_local {
 
     //we want to save bcl2fastq output in our results/1_demuxed folder 
-    publishDir '/home/lrenteria/inspiired_nf/results/1_demuxed/', pattern: 'results/**/*', mode: 'copy', overwrite: true
-    publishDir '/home/lrenteria/inspiired_nf/results/1_demuxed/', pattern: 'InterOp/*.bin', mode: 'copy', overwrite: true
+    publishDir '/home/lrenteria/inspiired_nf/results/1_demuxed/', pattern: 'results/**/*', mode: 'symlink', overwrite: true
+    publishDir '/home/lrenteria/inspiired_nf/results/1_demuxed/', pattern: 'InterOp/*.bin', mode: 'symlink', overwrite: true
 
     input:
     tuple val(meta), path(samplesheet), path(run_dir)

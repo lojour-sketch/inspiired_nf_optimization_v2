@@ -49,18 +49,3 @@ workflow MULTIQC_wfl {
     plots   = MULTIQC.out.plots
     versions= MULTIQC.out.versions
 }
-//for debugging
-    //fastqc_html must have this type of data: 
-    //      fastqc_html.view { "fastqc html of raw fastq multiqc_wfl: ${it}"}
-    //fastqc_zip must have this type of data: 
-    //      fastqc_zip.view { "fastqc zip of raw fastq multiqc_wfl: ${it}"}
-    //fastqc_html_trimmed must have this type of data:
-    //      fastqc_html_trimmed.view { "fastqc html of trimmed fastq multiqc_wfl: ${it}"}
-    //fastqc_zip_trimmed must have this type of data:
-    //      fastqc_zip_trimmed.view { "fastqc zpi of trimmed fastq multiqc_wfl: ${it}"}
-    //ch_fastqc_raw must have this type of data: 
-    //      ch_fastqc_raw.view { "Raw FASTQC channel: ${it}" }
-    //ch_fastqc_trimmed must have this type of data:
-    //      ch_fastqc_trimmed.view { "Trimmed FASTQC channel: ${it}" }
-    //ch_multiqc_flat must have this type of data: 
-    //      ch_multiqc_flat.view { "Final input for Multiqc: ${it}"}

@@ -1,6 +1,6 @@
-process UMI_EXTRACT_LOCAL {
+process UMIEXTRACT_local {
    
-    publishDir '/home/lrenteria/inspiired_nf/results/2_extractedumi', mode: 'copy', overwrite: true
+    publishDir '/home/lrenteria/inspiired_nf/results/2_extractedumi', mode: 'symlink', overwrite: true
    
     input:
     tuple val(sample_id), val(linker1), val(linker2), path(reads)
