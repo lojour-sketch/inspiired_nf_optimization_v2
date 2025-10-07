@@ -69,11 +69,7 @@ workflow {
     // def ch_alignments = ALIGNMENT_wfl.out.ch_alignments
 
     // POSTPROCESSING_wfl(ch_alignments, ch_primer_ltr))
-    
-    
-    // ALIGNMENT_wfl(ch_dereplicated, genome_name)
 
-    //postprocessing workflow (processalignments)
             //in the postprocessing we will expand the reads with the keys file and divide the alignments in different groups. (unique, multihit, chimeric)
     //replicate/expand dereplicated reads
 

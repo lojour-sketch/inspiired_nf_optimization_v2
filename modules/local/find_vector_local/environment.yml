@@ -5,5 +5,6 @@ channels:
   - defaults
 dependencies:
   - minimap2=2.30
+  - r-base=4.3
   - r-biostrings=3.21
   - r-dplyr=1.1.4
