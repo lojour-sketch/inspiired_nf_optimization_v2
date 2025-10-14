@@ -1,4 +1,9 @@
 process BCL2FASTQ_local {
+
+    //we want to save bcl2fastq output in our results/1_demuxed folder 
+    publishDir '/home/lrenteria/inspiired_nf/results/1_demuxed/', pattern: 'results/**/*', mode: 'symlink', overwrite: true
+    publishDir '/home/lrenteria/inspiired_nf/results/1_demuxed/', pattern: 'InterOp/*.bin', mode: 'symlink', overwrite: true
+
     input:
     tuple val(meta), path(samplesheet), path(run_dir)
 
@@ -16,16 +21,21 @@ process BCL2FASTQ_local {
     """
 
     # changed some parameters that differ from Patxi's script
-    bcl2fastq \
-        -R ${run_dir}/RUN329 \
-        -o ${run_dir}/demuxed \
-        -r 25 -p 25 -w 25 \
-        --use-bases-mask I20Y159,I12,Y143 \
-        --create-fastq-for-index-reads \
-        --barcode-mismatches 2,2 \
-        --no-lane-splitting   
-
-    cp -r ${run_dir}/RUN329/InterOp .
+    bcl2fastq \\
+        --runfolder-dir ${run_dir} \\
+        --output-dir results \\
+        --no-lane-splitting \\
+        --barcode-mismatches 2,2 \\
+        --create-fastq-for-index-reads \\
+        -r 25 \\
+        -p 25 \\
+        -w 25 \\
+        --use-bases-mask I20Y159,I12,Y143 \\
+        #         --processing-threads ${task.cpus}
+        #         --sample-sheet ${samplesheet}
+                 
+    
+    cp -r ${run_dir}/InterOp .
 
     #logging bcl2fastq version used
     cat <<-END_VERSIONS > versions.yml

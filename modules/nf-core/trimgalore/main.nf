@@ -2,6 +2,8 @@ process TRIMGALORE {
     tag "${meta.id}"
     label 'process_high'
 
+    publishDir '/home/lrenteria/inspiired_nf/results/4_trimmedfastq_fastqc', mode: 'symlink', overwrite: true
+
     conda "${moduleDir}/environment.yml"
     container "${workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container
         ? 'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/9b/9becad054093ad4083a961d12733f2a742e11728fe9aa815d678b882b3ede520/data'
@@ -11,7 +13,7 @@ process TRIMGALORE {
     tuple val(meta), path(reads)
 
     output:
-    tuple val(meta), path("*{3prime,5prime,trimmed,val}{,_1,_2}.fq.gz"), emit: reads
+    tuple val(meta), path("*{3prime,5prime,trimmed,val}{,_1,_2}.fq.gz"), emit: trimmed_reads
     tuple val(meta), path("*report.txt")                               , emit: log, optional: true
     tuple val(meta), path("*unpaired{,_1,_2}.fq.gz")                  , emit: unpaired, optional: true
     tuple val(meta), path("*.html")                                    , emit: html, optional: true
@@ -22,6 +24,7 @@ process TRIMGALORE {
     task.ext.when == null || task.ext.when
 
     script:
+    def prefix = task.ext.prefix ?: "${meta.id}"
     def args = task.ext.args ?: ''
     // Calculate number of --cores for TrimGalore based on value of task.cpus
     // See: https://github.com/FelixKrueger/TrimGalore/blob/master/CHANGELOG.md#version-060-release-on-1-mar-2019
@@ -41,7 +44,7 @@ process TRIMGALORE {
     }
 
     // Added soft-links to original fastqs for consistent naming in MultiQC
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    
     if (meta.single_end) {
         def args_list = args.split("\\s(?=--)").toList()
         args_list.removeAll { it.toLowerCase().contains('_r2 ') }
@@ -72,6 +75,8 @@ process TRIMGALORE {
             --gzip \\
             ${prefix}_1.fastq.gz \\
             ${prefix}_2.fastq.gz
+        
+
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":

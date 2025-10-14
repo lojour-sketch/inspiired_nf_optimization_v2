@@ -1,13 +1,16 @@
 process MULTIQC {
     label 'process_single'
 
+    publishDir '/home/lrenteria/inspiired_nf/results/7_multiqcaftertrim', mode: 'symlink', overwrite: true
+
+
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/multiqc:1.30--pyhdfd78af_0' :
         'biocontainers/multiqc:1.30--pyhdfd78af_0' }"
 
     input:
-    path  multiqc_files, stageAs: "?/*"
+    path  multiqc_files
     path(multiqc_config)
     path(extra_multiqc_config)
     path(multiqc_logo)
@@ -32,16 +35,7 @@ process MULTIQC {
     def replace = replace_names ? "--replace-names ${replace_names}" : ''
     def samples = sample_names ? "--sample-names ${sample_names}" : ''
     """
-    multiqc \\
-        --force \\
-        $args \\
-        $config \\
-        $prefix \\
-        $extra_config \\
-        $logo \\
-        $replace \\
-        $samples \\
-        .
+    multiqc --force $args $config $prefix $extra_config $logo $replace $samples .
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
