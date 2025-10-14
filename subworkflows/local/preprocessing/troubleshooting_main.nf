@@ -35,7 +35,7 @@ workflow PREPROCESSING_wfl {
         //crete necessary input channel for umi_extract_local
         //first create channel with tuple(sample_id, [R1, R2])
         ch_reads_by_sample = ch_demux_fastq
-            .map { id, file_list -> file_list }  // ignore id (e.g., "run1")
+            .map { id, file_list -> file_list }
             .flatten()
             .map { file ->
                 def name = file.getFileName().toString()
@@ -43,12 +43,30 @@ workflow PREPROCESSING_wfl {
                 tuple(sample_name, file)
             }
             .groupTuple()
+
+        // Separate channel just for debugging
+                ch_debug = ch_reads_by_sample
+                    .map { sample, files -> 
+                        tuple("troub_" + sample, files) 
+                    }
+        // If ch_linkers needs the same prefix:
+                ch_linkers_debug = ch_linkers
+                    .map { sample, linker1, linker2 -> 
+                        tuple("troub_" + sample, linker1, linker2) 
+                    }
+        // If ch_primer_ltr needs the same prefix:
+                ch_primer_ltr_debug = ch_primer_ltr
+                    .map { sample, primer, ltrbit, largeLTRFrag, mingDNA -> 
+                    tuple("troub_" + sample, primer, ltrbit, largeLTRFrag, mingDNA) 
+                }
+
         // now we combine the reads channel with the linkers channel per sample
-        ch_reads_by_sample
-            .join(ch_linkers) //join by sample_id
+        ch_debug
+            .join(ch_linkers_debug) //join by sample_id
             .map { sample_id, reads, linker1, linker2 ->
                     tuple(sample_id, linker1, linker2, reads)
             }
+            .take(2) //for troubleshooting, we will only take two samples
             .set { ch_umi_extract_input }
         //now running the umi_extract process
         UMIEXTRACT_local(ch_umi_extract_input)
@@ -101,7 +119,7 @@ workflow PREPROCESSING_wfl {
         //prepare input for LTRCHECKING_wfl
         ch_fastq_filtered
             .map { meta, reads -> tuple(meta.id, reads) }
-            .join( ch_primer_ltr.map { id, primer, ltrbit, largeLTRFrag, mingDNA -> tuple(id, primer, ltrbit, largeLTRFrag, mingDNA) } )
+            .join( ch_primer_ltr_debug.map { id, primer, ltrbit, largeLTRFrag, mingDNA -> tuple(id, primer, ltrbit, largeLTRFrag, mingDNA) } )
             .map { sample_id, reads, primer, ltrbit, largeLTRFrag, mingDNA ->
                 tuple(sample_id, reads, primer, ltrbit, largeLTRFrag, mingDNA)
             }
@@ -115,9 +133,10 @@ workflow PREPROCESSING_wfl {
 
     ///////////////////////// Removing the reverse complement reads, reverseLTRfrag form R1 and reversecommonlinker form R2 /////////////////////////
         //we need to first join the channels we need for rcremoval, if not nextflow will not cache properly
+
         ch_ltr_chunks
         .join( 
-            ch_linkers.map { sample, unique_linker, common_linker -> 
+            ch_linkers_debug.map { sample, unique_linker, common_linker -> 
                 tuple(sample, unique_linker, common_linker) 
             }
         )
@@ -130,13 +149,15 @@ workflow PREPROCESSING_wfl {
 
 
     ///////////////////////// Find vector sequences and remove them /////////////////////////
+        //we need to first join the channels we need for rcremoval, if not nextflow will not cache properly
         ch_rc_removed
         .join( 
-            ch_primer_ltr.map { id, primer, ltrbit, largeLTRfrag, mingDNA -> 
+            ch_primer_ltr_debug.map { id, primer, ltrbit, largeLTRfrag, mingDNA -> 
                 tuple(id, primer, ltrbit, largeLTRfrag, mingDNA) 
             }
         )
         .set { ch_findvector_input }
+
 
         FINDVECTOR_local(ch_findvector_input, vectorfasta)
         def ch_vector_removed = FINDVECTOR_local.out.ch_vector_removed
@@ -145,20 +166,18 @@ workflow PREPROCESSING_wfl {
 
 
     ///////////////////////// Remove short sequences /////////////////////////
-
         ch_vector_removed
         .join( 
-            ch_primer_ltr.map { id, primer, ltrbit, largeLTRfrag, mingDNA -> 
+            ch_primer_ltr_debug.map { id, primer, ltrbit, largeLTRfrag, mingDNA -> 
                 tuple(id, primer, ltrbit, largeLTRfrag, mingDNA) 
             }
         )
         .set { ch_shortremove_input }
-
+        
         SHORTREMOVE_local(ch_shortremove_input)
         def ch_short_removed = SHORTREMOVE_local.out.reads
     
-    def stop_here = SHORTREMOVE_local.out.reads.collect()
-    stop_here.view()
+
 
 
     ///////////////////////// Dereplicate reads /////////////////////////

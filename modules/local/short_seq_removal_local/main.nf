@@ -3,8 +3,7 @@ process SHORTREMOVE_local{
     publishDir "${params.runfolderDir}/../results/11_short_remove", mode: 'symlink', overwrite: true
 
     input:
-    tuple val(sample), path(read1), path(read2)
-    tuple val(sample), val(primer), val(ltrbit), val(largeLTRfrag), val(mingDNA)
+    tuple val(sample), path(read1), path(read2), val(primer), val(ltrbit), val(largeLTRfrag), val(mingDNA)
 
     output:
     tuple val(sample), path("${sample}.short_removed_R1.paired.fastq.gz"), path("${sample}.short_removed_R2.paired.fastq.gz"), emit: reads

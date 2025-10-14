@@ -5,22 +5,40 @@ workflow ALIGNMENT_wfl {
 
     take:
     ch_dereplicated
-    genome_name             //take the genome name from the samplesheet, reference the samplesheet in the maindivided.nf
+    ch_refGenome             //take the genome name from the samplesheet, reference the samplesheet in the maindivided.nf
 
     main:
-    // Check if index exists, only run indexing if needed, it takes quite long
-    def index_path = "${params.runfolderDir}/../results/12_genome_index/${genome_name}_STAR_index"
-    def index_exists = new File(index_path).exists()
+    // First, check which genomes need indexing
+    ch_refGenome.branch { refGenome_name ->
+        def index_path = "${params.runfolderDir}/../results/13_genome_index/${refGenome_name}_STAR_index"
+        def index_exists = new File("${index_path}/SA").exists() && new File("${index_path}/SAindex").exists()
+        
+        log.info "Genome: ${refGenome_name}, Index exists: ${index_exists}"
+        
+        needs_indexing: !index_exists
+            return refGenome_name
+        has_index: index_exists
+            return [refGenome_name, index_path]
+    }.set { genome_branches }
     
-    if (!index_exists) {
-        GENOME_INDEXING_local(genome_name)
-    }
+    // Only run indexing for genomes that need it
+    GENOME_INDEXING_local(genome_branches.needs_indexing)
     
-    // Use existing index or newly created one
-    // condition ? value_if_true : value_if_false
-    def genome_index = index_exists ? index_path : GENOME_INDEXING_local.out."${genome_name}_STAR_index"
+    // Create genome index channel
+    ch_existing_indexes = genome_branches.has_index
+    ch_new_indexes = GENOME_INDEXING_local.out.index.map { index -> [refGenome_name, index] }
+    ch_all_indexes = ch_existing_indexes.mix(ch_new_indexes)
+    
+    // Combine with dereplicated data
+    ch_dereplicated
+        .combine(ch_all_indexes.first())  // Use .first() to get only one genome index
+        .map { sample, r1, r2, keys, refGenome_name, genome_index_dir ->
+            return [sample, r1, r2, keys, genome_index_dir]
+        }
+        .set { ch_alignment_input }
 
-    ALIGNMENT_local(ch_dereplicated, genome_index)
+    // Now pass the combined channel to alignment
+    ALIGNMENT_local(ch_alignment_input)
     ALIGNMENT_local.out.aligned.set{ ch_aligned }
     // do we make different channels for different types of alignment? chimeras, multimapped, uniquely mapped?
 

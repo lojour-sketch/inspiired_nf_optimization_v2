@@ -18,10 +18,11 @@ log.info "Using data from directory: ${params.runfolderDir}"
 
 // Include modules
 
-include { PREPROCESSING_wfl } from './subworkflows/local/preprocessing/main'
+include { PREPROCESSING_wfl } from './subworkflows/local/preprocessing/troubleshooting_main'
 include { ALIGNMENT_wfl } from './subworkflows/local/alignment/main'
+include { POSTPROCESSING_wfl } from './subworkflows/local/postprocessing/main'
 
-// Create necessary input tuple for bcl2fastq
+// Create necessary input tuple for bcl2fastq. we only take two samples for faster troubleshooting
 
 Channel
     .of( tuple([id: 'run1'], file(params.samplesheet), file(params.runfolderDir, type: 'dir')) )
@@ -70,8 +71,11 @@ workflow {
                 return csvLines
             }
             .splitCsv(header: true)
+            .take(2)
             .map { row -> row.refGenome }
             .set { ch_refGenome }
+
+
 
 // ************************************* WORKFLOW *************************************
     PREPROCESSING_wfl(ch_bcl_input, ch_linkers, ch_primer_ltr, file('vector.fasta') )
@@ -80,8 +84,7 @@ workflow {
     ALIGNMENT_wfl(ch_dereplicated, ch_refGenome)
     def ch_aligned = ALIGNMENT_wfl.out.ch_aligned
 
-    //in the postprocessing part, we need uanro's opinion
-    // POSTPROCESSING_wfl(ch_alignments, ch_primer_ltr))
+    POSTPROCESSING_wfl(ch_aligned, ch_primer_ltr)
 
             //in the postprocessing we will expand the reads with the keys file and divide the alignments in different groups. (unique, multihit, chimeric)
     //replicate/expand dereplicated reads
