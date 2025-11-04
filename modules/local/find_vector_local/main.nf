@@ -1,10 +1,10 @@
 process FINDVECTOR_local {
 
-    conda "${params.runfolderDir}/../modules/local/find_vector/environment.yml"
+    memory '20 GB'
     publishDir "${params.runfolderDir}/../results/10_findvector", mode: 'symlink', overwrite: true
 
     input:
-    tuple val(meta), path(read1), path(read2), val(primer), val(ltrbit), val(largeLTRfrag), val(mingDNA)
+    tuple val(meta), path(read1), path(read2), val(primer), val(ltrbit), val(largeLTRfrag), val(project), val(mingDNA)
     path(vector_fasta)
 
     output:

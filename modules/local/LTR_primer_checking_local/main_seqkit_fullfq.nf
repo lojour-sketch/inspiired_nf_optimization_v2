@@ -2,16 +2,16 @@ process LTRchecking_seqkit_local {
 
     cpus 6
 
-    publishDir '/home/lrenteria/inspiired_nf/results/8_LTR_presence', mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/8_LTR_presence", mode: 'symlink', overwrite: true
 
     input:
-    tuple val(meta), path(reads), val(primer), val(ltrbit), val(largeLTRFrag), val(mingDNA)
+    tuple val(meta), path(reads), val(primer), val(ltrbit), val(largeLTRFrag), val(project), val(mingDNA)
 
     output:
     tuple val(meta),
           path("${meta}.ltr_filtered_R1.fastq.gz"),
           path("${meta}.ltr_filtered_R2.fastq.gz"),
-          val(primer), val(ltrbit), val(largeLTRFrag), val(mingDNA), emit: reads
+          val(primer), val(ltrbit), val(largeLTRFrag), val(project), val(mingDNA), emit: reads
 
     script:
     def prefixLen = primer.size() + ltrbit.size()

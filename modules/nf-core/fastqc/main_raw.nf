@@ -2,7 +2,7 @@ process FASTQC_RAW {
     tag "${meta.id}"
     label 'process_medium'
 
-    publishDir '/home/lrenteria/inspiired_nf/results/3_fastqcraw', mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/3_fastqcraw", mode: 'symlink', overwrite: true
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

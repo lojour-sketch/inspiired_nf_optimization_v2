@@ -1,7 +1,7 @@
 process MULTIQC {
     label 'process_single'
 
-    publishDir '/home/lrenteria/inspiired_nf/results/7_multiqcaftertrim', mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/7_multiqcaftertrim", mode: 'symlink', overwrite: true
 
 
     conda "${moduleDir}/environment.yml"

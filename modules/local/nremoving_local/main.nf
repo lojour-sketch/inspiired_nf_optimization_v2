@@ -1,7 +1,7 @@
  process N_REMOVING {
 
     tag "${meta.id}"
-    publishDir '/home/lrenteria/inspiired_nf/results/5_removed_n', mode: 'copy', overwrite: true
+    publishDir "${params.runfolderDir}/../results/5_removed_n", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(reads)

@@ -1,5 +1,5 @@
 include { BCL2FASTQ_local } from '../../../modules/local/bcl2fastq_local/main'
-include { UMIEXTRACT_local } from '../../../modules/local/umi_extract_local/main'
+include { UMIEXTRACT_local } from '../../../modules/local/umi_extract_local/main_samplecorrect'
 include { FASTQCANDTRIM_wfl } from '../../../subworkflows/nf-core/fastqc_fastq_umitools_trimgalore/main'
 include { MULTIQC_wfl } from '../../../subworkflows/nf-core/multiqc/main'
 include { LTRchecking_seqkit_local } from '../../../modules/local/LTR_primer_checking_local/main_seqkit_fullfq'
@@ -7,6 +7,8 @@ include { RCremoval_inspiired_local } from '../../../modules/local/rcremoval_loc
 include { FINDVECTOR_local } from '../../../modules/local/find_vector_local/main'
 include { SHORTREMOVE_local } from '../../../modules/local/short_seq_removal_local/main'
 include { DEREPLICATE_local } from '../../../modules/local/dereplicate_local/main'
+
+// MAIN
 
 workflow PREPROCESSING_wfl {
 
@@ -19,7 +21,13 @@ workflow PREPROCESSING_wfl {
     main:
 
     ///////////////////////// Passing bcl data into fastq (demuxing) /////////////////////////
-        BCL2FASTQ_local(ch_bcl_input)
+        //creating bcl input channel, ch_bcl_input + ch_primer_ltr
+        ch_primer_ltr
+            .combine(ch_bcl_input)
+            .take(1) //we don't want to demux x times (number of rows of the samplesheet), we demux once to create all the samples
+            .set { ch_bcl_primer_input }
+
+        BCL2FASTQ_local(ch_bcl_primer_input)
             BCL2FASTQ_local.out.fastq           .collect().set { ch_demux_fastq }
             BCL2FASTQ_local.out.fastq_idx       .collect().set { ch_fastq_idx }
             BCL2FASTQ_local.out.undetermined    .collect().set { ch_undetermined }
@@ -101,9 +109,9 @@ workflow PREPROCESSING_wfl {
         //prepare input for LTRCHECKING_wfl
         ch_fastq_filtered
             .map { meta, reads -> tuple(meta.id, reads) }
-            .join( ch_primer_ltr.map { id, primer, ltrbit, largeLTRFrag, mingDNA -> tuple(id, primer, ltrbit, largeLTRFrag, mingDNA) } )
-            .map { sample_id, reads, primer, ltrbit, largeLTRFrag, mingDNA ->
-                tuple(sample_id, reads, primer, ltrbit, largeLTRFrag, mingDNA)
+            .join( ch_primer_ltr.map { id, primer, ltrbit, largeLTRFrag, project, mingDNA -> tuple(id, primer, ltrbit, largeLTRFrag, project, mingDNA) } )
+            .map { sample_id, reads, primer, ltrbit, largeLTRFrag, project, mingDNA ->
+                tuple(sample_id, reads, primer, ltrbit, largeLTRFrag, project, mingDNA)
             }
             .set { ch_input }
         
@@ -116,11 +124,7 @@ workflow PREPROCESSING_wfl {
     ///////////////////////// Removing the reverse complement reads, reverseLTRfrag form R1 and reversecommonlinker form R2 /////////////////////////
         //we need to first join the channels we need for rcremoval, if not nextflow will not cache properly
         ch_ltr_chunks
-        .join( 
-            ch_linkers.map { sample, unique_linker, common_linker -> 
-                tuple(sample, unique_linker, common_linker) 
-            }
-        )
+        .join( ch_linkers )
         .set { ch_joined_input }
 
         RCremoval_inspiired_local(ch_joined_input)
@@ -131,11 +135,7 @@ workflow PREPROCESSING_wfl {
 
     ///////////////////////// Find vector sequences and remove them /////////////////////////
         ch_rc_removed
-        .join( 
-            ch_primer_ltr.map { id, primer, ltrbit, largeLTRfrag, mingDNA -> 
-                tuple(id, primer, ltrbit, largeLTRfrag, mingDNA) 
-            }
-        )
+        .join( ch_primer_ltr )
         .set { ch_findvector_input }
 
         FINDVECTOR_local(ch_findvector_input, vectorfasta)
@@ -147,28 +147,17 @@ workflow PREPROCESSING_wfl {
     ///////////////////////// Remove short sequences /////////////////////////
 
         ch_vector_removed
-        .join( 
-            ch_primer_ltr.map { id, primer, ltrbit, largeLTRfrag, mingDNA -> 
-                tuple(id, primer, ltrbit, largeLTRfrag, mingDNA) 
-            }
-        )
+        .join( ch_primer_ltr )
         .set { ch_shortremove_input }
 
         SHORTREMOVE_local(ch_shortremove_input)
-        def ch_short_removed = SHORTREMOVE_local.out.reads
-    
-    def stop_here = SHORTREMOVE_local.out.reads.collect()
-    stop_here.view()
 
-
-    ///////////////////////// Dereplicate reads /////////////////////////
-        DEREPLICATE_local(ch_short_removed)
 
 
 
 
     emit:
-    ch_dereplicated = DEREPLICATE_local.out.ch_dereplicated
+    ch_short_removed = SHORTREMOVE_local.out.reads
 
 
 }

@@ -1,5 +1,5 @@
 include { ALIGNMENT_local } from '../../../modules/local/alignment/main'
-include { GENOME_INDEXING_local } from '../../../modules/local/genome_indexing/main'
+include { GENOME_INDEXING_local } from '../../../modules/local/genome_indexing/main_maren'
 
 workflow ALIGNMENT_wfl {
 

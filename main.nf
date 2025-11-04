@@ -18,164 +18,102 @@ log.info "Using data from directory: ${params.runfolderDir}"
 
 // Include modules
 
-//include { BCL2FASTQ } from './modules/nf-core/bcl2fastq/main.nf' 
-include { BCL2FASTQ_local } from './modules/local/bcl2fastq_local/main.nf'
-include { UMI_EXTRACT_LOCAL } from './modules/local/umi_extract_local/main.nf'
-include { FASTQ_FASTQC_UMITOOLS_TRIMGALORE } from './subworkflows/nf-core/fastq_fastqc_umitools_trimgalore/main.nf'
-include { MULTIQC } from './modules/nf-core/multiqc/main.nf'
+// MAIN
+
+include { PREPROCESSING_wfl } from './subworkflows/local/preprocessing/main'
+include { ALIGNMENT_wfl } from './subworkflows/local/alignment/main'
+include { POSTPROCESSING_twice_wfl } from './subworkflows/local/postprocessing/main_inspiired'
 
 // Create necessary input tuple for bcl2fastq
 
 Channel
-    .of( tuple([id: 'run1', single_end: false], file(params.samplesheet), file(params.runfolderDir, type: 'dir')) )
+    .of( tuple([id: 'run1'], file(params.samplesheet), file(params.runfolderDir, type: 'dir')) )
     .set { ch_bcl_input }
 
 
 
 // Workflow
 workflow {
-    log.info "\n"
-    log.info "************* Starting BCL conversion to FASTQ ****************"
-    log.info "\n"
 
-    // Run bcl2fastq process
-    BCL2FASTQ_local(ch_bcl_input)
+// ******************************** NECESSARY CHANNELS ********************************
+        // we need a channel with the sample unique and common linkers to extract the umi
+            Channel
+            .fromPath(params.samplesheet)
+            .map { file ->
+                def lines = file.text.readLines()
+                def dataStart = lines.findIndexOf { it.startsWith('[Data]') } + 1
+                def csvLines = lines[dataStart..-1].join("\n")
+                return csvLines
+            }
+            .splitCsv(header: true)
+            .map { row ->
+                tuple(row.Sample_ID, row.sample_unique_linker, row.common_linker)
+            }
+            .set { ch_linkers }
+        // we need a channel with some samplesheet information as input for some of the processes
+        Channel
+            .fromPath(params.samplesheet)
+            .map { file ->
+                def lines = file.text.readLines()
+                def dataStart = lines.findIndexOf { it.startsWith('[Data]') } + 1
+                def csvLines = lines[dataStart..-1].join("\n")
+                return csvLines
+            }
+            .splitCsv(header: true)
+            .map { row ->
+                tuple(row.Sample_ID, row.primer, row.ltrbit, row.largeLTRFrag, row.Sample_Project, row.mingDNA)
+            }
+            .set { ch_primer_ltr }
+        // we need a channel with the reference genome
+        Channel.fromPath(params.samplesheet)
+            .map { file ->
+                def lines = file.text.readLines()
+                def dataStart = lines.findIndexOf { it.startsWith('[Data]') } + 1
+                def csvLines = lines[dataStart..-1].join("\n")
+                return csvLines
+            }
+            .splitCsv(header: true)
+            .map { row -> 
+                def refGenomeMap = [
+                    "hg19": "${params.runfolderDir}/../hg19_GRCh37_UCSC_initialrelease_2009.fa",
+                    "hg38": "${params.runfolderDir}/../hg38_GRCh38_UCSC_initialrelease_2013.fa"
+                ]
+                def refKnowngeneMap = [
+                    "hg19": "TxDb.Hsapiens.UCSC.hg19.knownGene",
+                    "hg38": "TxDb.Hsapiens.UCSC.hg38.refGene"
+                ]
+                def refGenome = row.refGenome
+                def refGenomeFile = refGenomeMap[refGenome]
+                def refKnowngeneFile = refKnowngeneMap[refGenome]
 
-    //save bcl2fastq output channels
+                if (!refGenomeFile) {
+                    error "Unsupported reference genome: ${refGenome}. Please use 'hg19' or 'hg38'."
+                }
+                return tuple(refGenome, refGenomeFile, refKnowngeneFile)
+            }
+            .set { ch_refGenome }
+        //we need a channel with the processing parameters
+        Channel.fromPath(params.samplesheet)
+            .map { file ->
+                def lines = file.text.readLines()
+                def dataStart = lines.findIndexOf { it.startsWith('[Data]') } + 1
+                def csvLines = lines[dataStart..-1].join("\n")
+                return csvLines
+            }
+            .splitCsv(header: true)
+            .map { row ->
+                tuple(row.minPctIdent, row.maxAlignStart, row.maxFragLength)
+            }
+            .set { ch_processing_params }
 
-    BCL2FASTQ_local.out.fastq           .collect().view { "Demultiplexed FASTQ files: ${it}" }.set { ch_demux_fastq }
-    BCL2FASTQ_local.out.fastq_idx       .collect().view { "Demultiplexed FASTQ index files: ${it}" }.set { ch_fastq_idx }
-    BCL2FASTQ_local.out.undetermined    .collect().view { "Undetermined FASTQ files: ${it}" }.set { ch_undetermined }
-    BCL2FASTQ_local.out.undetermined_idx.collect().view { "Undetermined FASTQ index files: ${it}" }.set { ch_undetermined_idx }
-    BCL2FASTQ_local.out.reports         .collect().view { "BCL2FASTQ reports: ${it}" }.set { ch_reports }
-    BCL2FASTQ_local.out.stats           .collect().view { "BCL2FASTQ stats: ${it}" }.set { ch_stats }
-    BCL2FASTQ_local.out.interop         .collect().view { "BCL2FASTQ interop files: ${it}" }.set { ch_interop }
-    BCL2FASTQ_local.out.versions        .collect().view { "BCL2FASTQ versions: ${it}" }.set { ch_versions }
+// ************************************* WORKFLOW *************************************
+    PREPROCESSING_wfl(ch_bcl_input, ch_linkers, ch_primer_ltr, file('vector.fasta') )
+    def ch_short_removed = PREPROCESSING_wfl.out.ch_short_removed
 
+    ALIGNMENT_wfl(ch_short_removed, ch_refGenome)
+    def ch_aligned = ALIGNMENT_wfl.out.ch_aligned
 
-    //crete necessary input channel for umi_extract_local
-    //first create channel with tuple(sample_id, [R1, R2])
+    POSTPROCESSING_twice_wfl(ch_aligned, ch_processing_params, ch_refGenome)
 
-    ch_reads_by_sample = ch_demux_fastq
-        .map { id, file_list -> file_list }  // ignore id (e.g., "run1")
-        .flatten()
-        .map { file ->
-            def name = file.getFileName().toString()
-            def sample_name = name.replaceAll(/_R[12]_001\.fastq\.gz$/, '')
-            tuple(sample_name, file)
-        }
-        .groupTuple()
-        .view { sample_id, pair -> 
-            "FASTQ pair: ${sample_id} -> ${pair}"
-        }
-
-    //create channel containing linker sequeces that constrain the UMI sequence
-    ch_linkers = Channel
-    .fromPath(params.linkerdata)
-    .splitCsv(header: true)
-    .map { row ->
-        tuple(row.sample_id, row.sample_unique_linker, row.common_linker)
-    }
-
-    ch_linkers.view { println "ch_linkers: $it" }
-
-
-    //debugging
-    ch_reads_by_sample.view { "READS SAMPLES: ${it[0]}" }
-    ch_linkers
-    .view { id, l1, l2 -> "LINKER tuple: ${id} -> ${l1}, ${l2}" }
-    
-    ch_linkers.view { "LINKERS SAMPLES: ${it[0]}" }
-
-    ch_linkers.view { "Linker full input: ${it}" }
-
-
-    //now we combine the reads channel with the linkers channel per sample
-    ch_reads_by_sample
-        .join(ch_linkers) //join by sample_id
-        .map { sample_id, reads, linker1, linker2 ->
-                tuple(sample_id, linker1, linker2, reads)
-        }
-        .view { "Reads and linkers joined channel: ${it}"}
-        .set { ch_umi_extract_input }
-
-    //now we run the umi extract in only R1 files
-    log.info "\n"
-    log.info "************* Starting UMI extraction ****************"
-    log.info "\n"
-    UMI_EXTRACT_LOCAL(ch_umi_extract_input)
-
-    UMI_EXTRACT_LOCAL.out
-    .view { "UMI extraction output: ${it}" }
-    .set { ch_umi_fastq }
-
-
-    //change umi output to match the next process' input: tuple: [ meta, reads ]
-    ch_umi_out = ch_umi_fastq
-        .map { sample_id, fq1, fq2, log ->
-            def meta = [ id: sample_id ]
-            meta['single_end'] = (fq2 == null)
-            tuple(meta, [fq1, fq2])
-        }
-        .view{"FASTQC input tuple: ${it}"}
-
-    //perform FASTQ_FASTQC_UMITOOLS_TRIMGALORE in each sample's reads 
-    //we check the bases quality, extract umi sequences and trim low quality bases
-
-    log.info "\n"
-    log.info "************* Starting FASTQC analysis and trimming ****************"
-    log.info "\n"
-    FASTQ_FASTQC_UMITOOLS_TRIMGALORE(
-        ch_umi_out,           // input tuple: [ meta, reads ]
-        false,                  //skip_fastqc
-        false,                  // with_umi
-        true,                   //skip_umi_extract
-        false,                  // skip_trimming
-        0,                   // umi_discard_read ()
-        10000,                   // min_trimmed_reads (default 10000)
-    )
-
-    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.reads
-        .view { "Trimmed paired reads: ${it}" }
-        .set { ch_trimmed_reads }
-
-    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.fastqc_html
-        .view { "FASTQC HTML reports (raw): ${it}" }
-        .set { ch_fastqc_html }
-
-    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.fastqc_zip
-        .view { "FASTQC ZIP reports (raw): ${it}" }
-        .set { ch_fastqc_zip }
-
-    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.umi_log
-        .view { "UMI-tools extract logs: ${it}" }
-        .set { ch_umi_log }
-
-    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.trim_unpaired
-        .view { "Unpaired reads after trimming: ${it}" }
-        .set { ch_trim_unpaired }
-
-    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.trim_html
-        .view { "TrimGalore FASTQC HTML: ${it}" }
-        .set { ch_trim_html }
-
-    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.trim_zip
-        .view { "TrimGalore FASTQC ZIP: ${it}" }
-        .set { ch_trim_zip }
-
-    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.trim_log
-        .view { "TrimGalore logs: ${it}" }
-        .set { ch_trim_log }
-
-    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.trim_read_count
-        .view { "Trimmed read count: ${it}" }
-        .set { ch_trim_read_count }
-
-    FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.versions
-        .view { "Software versions: ${it}" }
-        .set { ch_versions }
-
-    //MULTIQC(FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.fastqc_zip)
-    //MULTIQC(FASTQ_FASTQC_UMITOOLS_TRIMGALORE.out.trim_zip)
 
 }

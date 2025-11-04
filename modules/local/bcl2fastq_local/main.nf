@@ -1,19 +1,19 @@
 process BCL2FASTQ_local {
 
     //we want to save bcl2fastq output in our results/1_demuxed folder 
-    publishDir '/home/lrenteria/inspiired_nf/results/1_demuxed/', pattern: 'results/**/*', mode: 'symlink', overwrite: true
-    publishDir '/home/lrenteria/inspiired_nf/results/1_demuxed/', pattern: 'InterOp/*.bin', mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/1_demuxed/", pattern: 'results/**/*', mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/1_demuxed/", pattern: 'InterOp/*.bin', mode: 'symlink', overwrite: true
 
     input:
-    tuple val(meta), path(samplesheet), path(run_dir)
+    tuple val(sample), val(primer), val(ltrbit), val(largeLTRFrag), val(project), val(mingDNA), val(meta), path(samplesheet), path(run_dir)
 
     output:
-    tuple val(meta), path("${run_dir}/demuxed/alloCART/*_R*_001.fastq.gz")        , emit: fastq
-    tuple val(meta), path("${run_dir}/demuxed/alloCART/*_I*_001.fastq.gz")       , optional:true, emit: fastq_idx
-    tuple val(meta), path("${run_dir}/demuxed/Undetermined_S0_R*_001.fastq.gz")  , optional:true, emit: undetermined
-    tuple val(meta), path("${run_dir}/demuxed/Undetermined_S0_I*_001.fastq.gz")  , optional:true, emit: undetermined_idx
-    tuple val(meta), path("${run_dir}/demuxed/Reports")                             , emit: reports
-    tuple val(meta), path("${run_dir}/demuxed/Stats")                               , emit: stats
+    tuple val(meta), path("results/${project}/*/*_R*_001.fastq.gz")        , emit: fastq
+    tuple val(meta), path("results/${project}/*/*_I*_001.fastq.gz")       , optional:true, emit: fastq_idx
+    tuple val(meta), path("results/Undetermined_S0_R*_001.fastq.gz")  , optional:true, emit: undetermined
+    tuple val(meta), path("results/Undetermined_S0_I*_001.fastq.gz")  , optional:true, emit: undetermined_idx
+    tuple val(meta), path("results/Reports")                             , emit: reports
+    tuple val(meta), path("results/Stats")                               , emit: stats
     tuple val(meta), path("InterOp/*.bin")                       , emit: interop
     path("versions.yml")                                         , emit: versions
 
