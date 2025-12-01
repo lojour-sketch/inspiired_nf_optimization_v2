@@ -79,8 +79,9 @@ trim_overreading <- function(reads, qual, marker, maxMismatch=3) {
     #we make sure that the cutting position is at least 1
     odf$cut <- with(odf, ifelse(isgood, pmax(odf$start-1, 1), cut))
 
-    #we ensure the cut does not exceed read length
+    #we ensure the cut does not exceed read length AND that is not negative
     odf$cut <- pmin(odf$cut, nchar(reads))
+    odf$cut <- pmax(odf$cut, 1)
 
     #now we convert the cut column into a vector to be able to trim the qual from there (((is this necessary?))
     cut_vector <- as.integer(odf$cut)

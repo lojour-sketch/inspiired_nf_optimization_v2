@@ -1,7 +1,7 @@
 process FINDVECTOR_local {
 
     memory '20 GB'
-    publishDir "${params.runfolderDir}/../results/10_findvector", mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/10_findvector/${params.projectName}", mode: 'symlink', overwrite: true
 
     input:
     tuple val(meta), path(read1), path(read2), val(primer), val(ltrbit), val(largeLTRfrag), val(project), val(mingDNA)
@@ -12,7 +12,7 @@ process FINDVECTOR_local {
 
     script:
     """
-    find_vector_2.R "${meta}" "${read1}" "${read2}" "${primer}${ltrbit}" "${vector_fasta}"
+    find_vector.R "${meta}" "${read1}" "${read2}" "${primer}${ltrbit}" "${vector_fasta}"
 
     """
 

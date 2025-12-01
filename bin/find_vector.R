@@ -10,7 +10,7 @@ vector <- args[5]
 globalIdentity <- 0.75
 
 library(Biostrings)
-library(dplyr)
+library(ShortRead)
 
 ## we will run the alignment with minimap. However, minimap calculates the identity percentage differently from BLAT, because minimap takes into account gaps to calculate the query length
 ## so we will calculate the identity the BLAT way (as inspiired) calculating matches / qSize from minimaps output
@@ -46,10 +46,13 @@ calculateidentity <- function(query_file, subject_file, min_identity) {
 hits.v.1 <- try(calculateidentity(read1, vector, globalIdentity)) 
 hits.v.2 <- try(calculateidentity(read2, vector, globalIdentity))
 
-    
-## we filter exactly as inspiired
-hits.v.1 <- dplyr::filter(hits.v.1, matches > globalIdentity*qSize & qStart <= 5)
-hits.v.2 <- dplyr::filter(hits.v.2, matches > globalIdentity*qSize)
+## we filter exactly as inspiired - using base R instead of dplyr
+if (nrow(hits.v.1) > 0) {
+    hits.v.1 <- hits.v.1[hits.v.1$matches > globalIdentity * hits.v.1$qSize & hits.v.1$qStart <= 5, ]
+}
+if (nrow(hits.v.2) > 0) {
+    hits.v.2 <- hits.v.2[hits.v.2$matches > globalIdentity * hits.v.2$qSize, ]
+}
 
 ## Extract common base name from headers (remove the " 1:N:0" / " 2:N:0" part)
 get_base_name <- function(header) {
@@ -57,32 +60,42 @@ get_base_name <- function(header) {
 }
 
 ## In the merge - use base names for matching
-hits.v.1$baseName <- get_base_name(hits.v.1$qName)
-hits.v.2$baseName <- get_base_name(hits.v.2$qName)
+if (nrow(hits.v.1) > 0) {
+    hits.v.1$baseName <- get_base_name(hits.v.1$qName)
+}
+if (nrow(hits.v.2) > 0) {
+    hits.v.2$baseName <- get_base_name(hits.v.2$qName)
+}
 
 ## now we merge the dataframes to get the reads that have vector in both pairs. we will only remove these    
-hits.v <- try(merge(hits.v.1[, c("baseName", "tStart")],
-                    hits.v.2[, c("baseName", "tStart")],
-                    by="baseName")
-                ,silent = TRUE)
+hits.v <- try({
+    if (nrow(hits.v.1) > 0 && nrow(hits.v.2) > 0) {
+        merge(hits.v.1[, c("baseName", "tStart")],
+              hits.v.2[, c("baseName", "tStart")],
+              by="baseName")
+    } else {
+        data.frame(baseName = character(0))
+    }
+}, silent = TRUE)
+
 ## as multihits can happen, we take only unique names
-vqName_base <- unique(hits.v$baseName) 
+if (inherits(hits.v, "try-error") || nrow(hits.v) == 0) {
+    vqName_base <- character(0)
+} else {
+    vqName_base <- unique(hits.v$baseName) 
+}
     
 #now we remove reads from both files. first we read them and get their basenames
-reads1 <- readDNAStringSet(read1, with.qualities=TRUE, format="fastq")
-reads2 <- readDNAStringSet(read2, with.qualities=TRUE, format="fastq")
+reads1 <- readFastq(read1, with.qualities=TRUE, format="fastq")
+reads2 <- readFastq(read2, with.qualities=TRUE, format="fastq")
 
-get_base_name_safe <- function(dnastringset) {
-    headers <- names(dnastringset)
-    # Ensure headers are character strings
-    if (!is.character(headers)) {
-        headers <- as.character(headers)
-    }
+# Extract headers safely
+get_base_name_safe <- function(shortread_obj) {
+    headers <- as.character(id(shortread_obj))
     # Extract base names (part before first space)
     sapply(strsplit(headers, " "), function(x) x[1])
 }
 
-## getting base names from dnastringsets safely
 reads.1_base <- get_base_name_safe(reads1)
 reads.2_base <- get_base_name_safe(reads2)
 
@@ -97,5 +110,20 @@ output_file2 <- paste0(meta, ".R2_vector_removed.fastq.gz")
 if (file.exists(output_file1)) file.remove(output_file1)
 if (file.exists(output_file2)) file.remove(output_file2)
 
-writeQualityScaledXStringSet(reads.1_clean, output_file1, format="fastq", compress=TRUE)
-writeQualityScaledXStringSet(reads.2_clean, output_file2, format="fastq", compress=TRUE)
+# Write FASTQ files properly using ShortRead::writeFastq
+if (length(reads.1_clean) > 0) {
+    writeFastq(reads.1_clean, output_file1, compress = TRUE)
+} else {
+    # Create empty file if no reads
+    file.create(output_file1)
+}
+
+if (length(reads.2_clean) > 0) {
+    writeFastq(reads.2_clean, output_file2, compress = TRUE)
+} else {
+    # Create empty file if no reads
+    file.create(output_file2)
+}
+
+cat("Successfully processed", length(reads.1_clean), "R1 reads and", length(reads.2_clean), "R2 reads\n")
+cat("Removed", length(reads1) - length(reads.1_clean), "R1 reads and", length(reads2) - length(reads.2_clean), "R2 reads containing vector\n")

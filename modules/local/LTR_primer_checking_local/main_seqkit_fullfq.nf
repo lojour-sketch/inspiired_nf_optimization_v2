@@ -2,7 +2,7 @@ process LTRchecking_seqkit_local {
 
     cpus 6
 
-    publishDir "${params.runfolderDir}/../results/8_LTR_presence", mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/8_LTR_presence/${params.projectName}", mode: 'symlink', overwrite: true
 
     input:
     tuple val(meta), path(reads), val(primer), val(ltrbit), val(largeLTRFrag), val(project), val(mingDNA)

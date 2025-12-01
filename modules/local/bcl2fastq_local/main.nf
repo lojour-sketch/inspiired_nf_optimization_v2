@@ -1,8 +1,8 @@
 process BCL2FASTQ_local {
 
     //we want to save bcl2fastq output in our results/1_demuxed folder 
-    publishDir "${params.runfolderDir}/../results/1_demuxed/", pattern: 'results/**/*', mode: 'symlink', overwrite: true
-    publishDir "${params.runfolderDir}/../results/1_demuxed/", pattern: 'InterOp/*.bin', mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/1_demuxed/${params.projectName}", pattern: 'results/**/*', mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/1_demuxed/${params.projectName}", pattern: 'InterOp/*.bin', mode: 'symlink', overwrite: true
 
     input:
     tuple val(sample), val(primer), val(ltrbit), val(largeLTRFrag), val(project), val(mingDNA), val(meta), path(samplesheet), path(run_dir)

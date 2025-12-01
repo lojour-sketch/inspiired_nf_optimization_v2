@@ -1,6 +1,6 @@
 process DEREPLICATE_local {
 
-    publishDir "${params.runfolderDir}/../results/12_dereplicated_reads", mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/12_dereplicated_reads/${params.projectName}", mode: 'symlink', overwrite: true
 
     input:
     tuple val(sample), path(read1), path(read2)

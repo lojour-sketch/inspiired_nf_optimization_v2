@@ -2,15 +2,18 @@
 
 // Parameters
 params.samplesheet = '' // this sheet contains barcodes, processing parameters, LTR fragments, etc.
+params.demuxSampleSheet = '' // this sheet contains only barcodes for demuxing
 params.runfolderDir = ''
-params.outputDir = ''
-params.linkerdata = ''
+params.projectName = ''
+params.FASTQfolderDir = ''
+
 
 // Parameter validation
 //if (!params.samplesheet) error "Missing --samplesheet parameter, provide path to samplesheet"
 if (!params.runfolderDir) error "Missing --runfolderDir parameter. provide path to BCL data folder or tarball"
-if (!params.outputDir) error "Missing --outputDir parameter, provide path to output directory"
-if (!params.linkerdata) error "Missing --linkerdata parameter, provide .tsv file with linker sequence information"
+if (!params.projectName) error "Missing --projectName parameter, provide the name of the project to organize the result folders"
+if (!params.FASTQfolderDir) error "Missing --FASTQfolderDir parameter, provide path to the folder with Undetermined FASTQ files"
+if (!params.demuxSampleSheet) error "Missing --demuxSampleSheet parameter, provide path to the barcode samplesheet for demuxing"
 
 // Log info
 
@@ -20,15 +23,15 @@ log.info "Using data from directory: ${params.runfolderDir}"
 
 // MAIN
 
-include { PREPROCESSING_wfl } from './subworkflows/local/preprocessing/main'
+include { PREPROCESSING_wfl } from './subworkflows/local/preprocessing/main_fastq'
 include { ALIGNMENT_wfl } from './subworkflows/local/alignment/main'
-include { POSTPROCESSING_twice_wfl } from './subworkflows/local/postprocessing/main_inspiired'
+include { POSTPROCESSING_twice_wfl } from './subworkflows/local/postprocessing/main'
 
 // Create necessary input tuple for bcl2fastq
 
-Channel
-    .of( tuple([id: 'run1'], file(params.samplesheet), file(params.runfolderDir, type: 'dir')) )
-    .set { ch_bcl_input }
+// Channel
+//     .of( tuple([id: 'run1'], file(params.samplesheet), file(params.runfolderDir, type: 'dir')) )
+//     .set { ch_bcl_input }
 
 
 
@@ -76,11 +79,13 @@ workflow {
             .map { row -> 
                 def refGenomeMap = [
                     "hg19": "${params.runfolderDir}/../hg19_GRCh37_UCSC_initialrelease_2009.fa",
-                    "hg38": "${params.runfolderDir}/../hg38_GRCh38_UCSC_initialrelease_2013.fa"
+                    "hg38": "${params.runfolderDir}/../hg38_GRCh38_UCSC_initialrelease_2013.fa",
+                    "hg18": "${params.runfolderDir}/../hg18_UCSC_2020_01_23_0222.fa"
                 ]
                 def refKnowngeneMap = [
                     "hg19": "TxDb.Hsapiens.UCSC.hg19.knownGene",
-                    "hg38": "TxDb.Hsapiens.UCSC.hg38.refGene"
+                    "hg38": "TxDb.Hsapiens.UCSC.hg38.refGene",
+                    "hg18": "TxDb.Hsapiens.UCSC.hg18.knownGene"
                 ]
                 def refGenome = row.refGenome
                 def refGenomeFile = refGenomeMap[refGenome]
@@ -107,7 +112,8 @@ workflow {
             .set { ch_processing_params }
 
 // ************************************* WORKFLOW *************************************
-    PREPROCESSING_wfl(ch_bcl_input, ch_linkers, ch_primer_ltr, file('vector.fasta') )
+    //PREPROCESSING_wfl(ch_bcl_input, ch_linkers, ch_primer_ltr, file('vector.fasta') )
+    PREPROCESSING_wfl(ch_linkers, ch_primer_ltr, file('vector.fasta') )
     def ch_short_removed = PREPROCESSING_wfl.out.ch_short_removed
 
     ALIGNMENT_wfl(ch_short_removed, ch_refGenome)

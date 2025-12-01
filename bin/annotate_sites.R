@@ -9,6 +9,7 @@ library(GenomicFeatures)
 library(GenomeInfoDb)
 library(dplyr)
 library(org.Hs.eg.db)
+library(clusterProfiler)
 
 #debug
 message("=== STARTING ANNOTATION SCRIPT ===")
@@ -17,8 +18,8 @@ message("Timestamp: ", Sys.time())
 # Get command line arguments
 args <- commandArgs(trailingOnly = TRUE)
 sample <- args[1]
-sitesFinal <- args[2] 
-allSites <- args[3]
+allSites <- args[2] 
+sitesFinal <- args[3]
 ref_genome <- args[4]
 txdbFile <- args[5]
 
@@ -40,18 +41,35 @@ if (txdbFile == "TxDb.Hsapiens.UCSC.hg19.knownGene") {
     library(TxDb.Hsapiens.UCSC.hg38.refGene)
     txdb <- TxDb.Hsapiens.UCSC.hg38.refGene
     message("Loaded hg38 refGene")
+} else if (txdbFile == "TxDb.Hsapiens.UCSC.hg18.knownGene") {
+    library(TxDb.Hsapiens.UCSC.hg18.knownGene)
+    txdb <- TxDb.Hsapiens.UCSC.hg18.knownGene
+    message("Loaded hg18 knownGene")
 } else {
     stop("Unsupported TxDb file: ", txdbFile)
 }
 
 message("Reading RDS files...")
 message("  Reading allSites: ", allSites)
-allsites_gr <- readRDS(allSites)
-message("  allsites_gr dimensions: ", length(allsites_gr))
+if(endsWith(allSites, ".RData")){
+    message("  Reading allSites: ", allSites)
+    object <- load(allSites)
+    allsites_gr <- get(object)
+} else {
+    message("  Reading allSites: ", allSites)
+    allsites_gr <- readRDS(allSites)
+    message("  allsites_gr dimensions: ", length(allsites_gr))
+}
 
-message("  Reading sitesFinal: ", sitesFinal)
-sites.final <- readRDS(sitesFinal)
-message("  sites.final dimensions: ", length(sites.final))
+if(endsWith(sitesFinal, ".RData")){
+    message("  Reading sitesFinal: ", sitesFinal)
+    object <- load(sitesFinal)
+    sites.final <- get(object)
+} else {
+    message("  Reading sitesFinal: ", sitesFinal)
+    sites.final <- readRDS(sitesFinal)
+    message("  sites.final dimensions: ", length(sites.final))
+}
 
 
 #we will create a column with the complete chromosome name and another with just the number
@@ -84,11 +102,11 @@ if(length(sites.final) > 0) {
     message("  allSites after reordering: ", length(allSites))
     #as we saw that some rows are repeated, we will make the granges unique
     #we think this is caused because in the standardization step some sites are grouped together that then are not merged in the dereplication step
-    message("Making sites unique...")
-    allSites <- unique(allSites)
-    sites.final <- unique(sites.final)
-    message("  Unique allSites: ", length(allSites))
-    message("  Unique sites.final: ", length(sites.final))
+    # message("Making sites unique...")
+    # allSites <- unique(allSites)
+    # sites.final <- unique(sites.final)
+    # message("  Unique allSites: ", length(allSites))
+    # message("  Unique sites.final: ", length(sites.final))
 
     message("Calculating PCR breakpoints...")
     pcrBreakpoints <- sort(paste0(as.integer(Rle(sites$siteID, sapply(sites.final$revmap, length))),
@@ -139,20 +157,49 @@ if(length(sites.final) > 0) {
     print(vennpie(peakAnno))
     print(upsetplot(peakAnno, vennpie = TRUE))
     print(plotDistToTSS(peakAnno))
+    peakAnno.dfr <- as.data.frame(peakAnno)
+    entrez_ids <- peakAnno.dfr$geneId
+    entrez_ids <- entrez_ids[!is.na(entrez_ids)]
+    entrez_ids <- as.character(entrez_ids)
+
+    if(length(entrez_ids) > 0) {
+        message("Calculating GO and KEGG enrichment...")
+        goenrichment <- enrichGO(
+            gene = entrez_ids,
+            OrgDb = org.Hs.eg.db,
+            keyType = "ENTREZID",
+            ont = "BP",
+            pAdjustMethod = "BH",
+            qvalueCutoff = 0.05,
+            readable = TRUE
+        )
+
+        if(!is.null(goenrichment) && nrow(as.data.frame(goenrichment)) > 0) {
+            message("GO enrichment results:")
+            print(dotplot(goenrichment, showCategory = 50, font.size = 4))
+        } else {
+            message("No GO enrichment results found, skipping dotplot.")
+        }
+
+        keggenrichment <- enrichKEGG(
+            gene = entrez_ids,
+            organism = "hsa",
+            pvalueCutoff = 0.05
+        )
+
+        if(!is.null(keggenrichment) && nrow(as.data.frame(keggenrichment)) > 0) {
+            message("KEGG enrichment results:")
+            print(dotplot(keggenrichment))
+        } else {
+            message("No KEGG enrichment results found, skipping dotplot.")
+        }
+    } else {
+        message("No ENTREZ IDs found for enrichment analysis, skipping GO and KEGG enrichment.")
+    }
+
     message("PDF generation completed")
     dev.off()
 }
-# to create exactly the file with the columns we want
-message("Creating output data frame...")
-peakAnno.dfr <- as.data.frame(peakAnno)
-
-#debugging:
-message("Peak annotation data frame structure:")
-str(peakAnno.dfr)
-message("Peak annotation data frame head:")
-head(peakAnno.dfr)
-message("Peak annotation data frame columns:")
-colnames(peakAnno.dfr)
 
 
 # Añadir las columnas que faltan desde sites.final

@@ -1,4 +1,4 @@
-include { DEDUPLICATE_local } from '../../../modules/local/deduplicate_local/main'
+include { INDEX_SORT_BAM_local } from '../../../modules/local/index_sort_bam_local/main_no_deduplication'
 include { BAM_TO_ALLSITES_local } from '../../../modules/local/bam_to_allsites_local/main_eshrem'
 include { ALLSITES_TO_SITESFINAL_inspiired_local } from '../../../modules/local/allsites_to_sitesfinal_local/main_inspiired'
 include { ANNOTATE_SITES_local } from '../../../modules/local/annotate_sites_local/main_inspiired'
@@ -11,11 +11,11 @@ workflow POSTPROCESSING_twice_wfl {
 
     main:
 
-    DEDUPLICATE_local(ch_aligned)
-    ch_deduped = DEDUPLICATE_local.out.deduped
+    INDEX_SORT_BAM_local(ch_aligned)
+    ch_sorted = INDEX_SORT_BAM_local.out.sorted
 
     //we need to join the channels to be able to give it to the process as input
-    ch_baminput = ch_deduped.merge(ch_processing_params)
+    ch_baminput = ch_sorted.merge(ch_processing_params)
 
     BAM_TO_ALLSITES_local(ch_baminput)
     ch_allsites = BAM_TO_ALLSITES_local.out.allsites

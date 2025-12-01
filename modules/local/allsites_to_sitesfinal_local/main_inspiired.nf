@@ -1,6 +1,6 @@
 process ALLSITES_TO_SITESFINAL_inspiired_local {
 
-    publishDir "${params.runfolderDir}/../results/17_sitesfinal_inspiired", mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/17_sitesfinal_inspiired/${params.projectName}", mode: 'symlink', overwrite: true
 
     input:
     tuple val(sample), path(allsites), path(tmpFile)

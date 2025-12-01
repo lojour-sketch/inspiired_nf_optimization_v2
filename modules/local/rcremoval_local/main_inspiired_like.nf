@@ -4,7 +4,7 @@ process RCremoval_inspiired_local {
     cache 'deep'
     memory '100GB'
 
-    publishDir "${params.runfolderDir}/../results/9_reverse_complement_removal_inspiired", mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/9_reverse_complement_removal_inspiired/${params.projectName}", mode: 'symlink', overwrite: true
 
     input:
     tuple val(meta), path(read1), path(read2), val(primer), val(ltrbit), val(largeLTRfrag), val(project), val(mingDNA), val(unique_linker), val(common_linker)

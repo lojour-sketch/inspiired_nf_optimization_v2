@@ -1,7 +1,7 @@
 process ALIGNMENT_local {
 
     scratch true
-    publishDir "${params.runfolderDir}/../results/14_alignment", mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/14_alignment/${params.projectName}", mode: 'symlink', overwrite: true
     memory '40GB'
 
     input:

@@ -1,6 +1,6 @@
 process ANNOTATE_SITES_local {
 
-    publishDir "${params.runfolderDir}/../results/18_annotated_inspiired", mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/18_annotated_inspiired/${params.projectName}", mode: 'symlink', overwrite: true
     
     memory '40GB'
 
@@ -12,7 +12,7 @@ process ANNOTATE_SITES_local {
 
     script:
     """
-    annotate_sites.R "${sample}" "${sample}_sitesfinal.rds" "${sample}_allsites_nostandard.rds" "${refGenomeFile}" "${refKnowngeneFile}"
+    annotate_sites.R "${sample}" "${sample}_allsites_nostandard.rds" "${sample}_sitesfinal.rds" "${refGenomeFile}" "${refKnowngeneFile}"
 
     """
 
