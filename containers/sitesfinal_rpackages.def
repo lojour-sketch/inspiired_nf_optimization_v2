@@ -1,0 +1,34 @@
+Bootstrap: docker
+From: bioconductor/bioconductor_docker:RELEASE_3_19
+
+%environment
+    # set up environment variables
+    export R_LIBS_USER=/usr/local/lib/R/site-library
+    export LC_ALL=C
+    export LANG=C.UTF-8
+
+%post
+    # update system
+    apt-get update && apt-get install -y --no-install-recommends \
+        libxml2-dev \
+        libcurl4-openssl-dev \
+        libssl-dev \
+        libz-dev \
+        libbz2-dev \
+        liblzma-dev \
+        libxt-dev \
+        libgit2-dev \
+        libharfbuzz-dev \
+        libfribidi-dev \
+        libfontconfig1-dev \
+        libglpk40 \
+        libhdf5-dev \
+        && rm -rf /var/lib/apt/lists/*
+
+    # install Bioconductor and CRAN packages
+    R -e "install.packages('tidyverse')"
+    R -e "if (!requireNamespace('BiocManager', quietly=TRUE)) install.packages('BiocManager')"
+    R -e "BiocManager::install(c('GenomicRanges', 'rtracklayer', 'hiReadsProcessor'), ask=FALSE, update=FALSE)"
+
+%runscript
+    exec Rscript "$@"

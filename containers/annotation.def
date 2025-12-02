@@ -1,0 +1,18 @@
+Bootstrap: docker
+From: bioconductor/bioconductor_docker:RELEASE_3_22
+
+%post
+    apt-get update && apt-get install -y libxt-dev perl
+    export R_LIBS_USER=/usr/local/lib/R/site-library
+    mkdir -p $R_LIBS_USER
+
+    R -e "\
+    install.packages(c('WriteXLS'), repos='https://cloud.r-project.org'); \
+    if (!requireNamespace('BiocManager', quietly=TRUE)) install.packages('BiocManager'); \
+    BiocManager::install(c('ChIPseeker','ggupset','ggimage','TxDb.Hsapiens.UCSC.hg38.refGene','TxDb.Hsapiens.UCSC.hg18.knownGene','TxDb.Hsapiens.UCSC.hg19.knownGene','BSgenome.Hsapiens.UCSC.hg38', 'org.Hs.eg.db', 'rtracklayer', 'clusterProfiler'), ask=FALSE); \
+    print('✅ Instalación completada')\
+    "
+
+
+%environment
+    export LC_ALL=C

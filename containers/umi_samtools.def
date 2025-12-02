@@ -1,0 +1,26 @@
+Bootstrap: docker
+From: python:3.11-slim
+
+
+%post
+    apt-get update && apt-get install -y \
+        procps \
+        samtools \
+        build-essential \
+        python3-dev \
+        git \
+        && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+    # Install compatible NumPy first
+    pip install --no-cache-dir "numpy<2.0"
+
+    # Then install umi_tools (it will use compatible NumPy)
+    pip install --no-cache-dir umi_tools
+
+
+%labels
+    Author YourName
+    Version v1.0
+
+%environment
+    export PATH=/usr/local/bin:$PATH

@@ -1,0 +1,51 @@
+Bootstrap: docker
+From: rocker/r-ver:4.3.1
+
+%post
+    # Update package lists and install system dependencies
+    apt-get update && apt-get install -y \
+        wget \
+        git \
+        build-essential \
+        zlib1g-dev \
+        libncurses5-dev \
+        libbz2-dev \
+        liblzma-dev \
+        libcurl4-openssl-dev \
+        libssl-dev \
+        libxml2-dev \
+        libpng-dev \
+        libjpeg-dev \
+        python3 \
+        python3-pip \
+        samtools
+    
+    # Install minimap2
+    cd /opt
+    git clone https://github.com/lh3/minimap2
+    cd minimap2 && make
+    ln -sf /opt/minimap2/minimap2 /usr/local/bin/minimap2
+    
+    # Install R dependencies and packages
+    R --slave -e "install.packages('BiocManager', repos='https://cloud.r-project.org/')"
+    R --slave -e "BiocManager::install(c('ShortRead', 'Biostrings', 'dplyr', 'FastqCleaner'))"
+    
+    # Clean up to reduce container size
+    apt-get clean
+    rm -rf /var/lib/apt/lists/*
+
+%environment
+    export LC_ALL=C
+    export PATH=/opt/minimap2:$PATH
+
+%runscript
+    echo "Container with ShortRead, Biostrings, dplyr, and minimap2"
+    echo "Available commands:"
+    echo "  R - for R programming"
+    echo "  minimap2 - for sequence alignment"
+    echo "  samtools - for SAM/BAM processing"
+
+%labels
+    Author YourName
+    Version 1.0
+    Description "Singularity container with ShortRead R package, Biostrings, dplyr, and minimap2"
