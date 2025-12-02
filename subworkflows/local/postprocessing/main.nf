@@ -1,9 +1,9 @@
 include { INDEX_SORT_BAM_local } from '../../../modules/local/index_sort_bam_local/main_no_deduplication'
 include { BAM_TO_ALLSITES_local } from '../../../modules/local/bam_to_allsites_local/main_eshrem'
-include { ALLSITES_TO_SITESFINAL_inspiired_local } from '../../../modules/local/allsites_to_sitesfinal_local/main_inspiired'
+include { ALLSITES_TO_SITESFINAL_edited_grouping_local } from '../../../modules/local/allsites_to_sitesfinal_local/main_edited_grouping'
 include { ANNOTATE_SITES_local } from '../../../modules/local/annotate_sites_local/main_inspiired'
 
-workflow POSTPROCESSING_twice_wfl {
+workflow POSTPROCESSING_wfl {
     take:
     ch_aligned
     ch_processing_params
@@ -20,8 +20,8 @@ workflow POSTPROCESSING_twice_wfl {
     BAM_TO_ALLSITES_local(ch_baminput)
     ch_allsites = BAM_TO_ALLSITES_local.out.allsites
 
-    ALLSITES_TO_SITESFINAL_inspiired_local(ch_allsites)
-    ch_sitesfinal = ALLSITES_TO_SITESFINAL_inspiired_local.out.sitesfinal
+    ALLSITES_TO_SITESFINAL_edited_grouping_local(ch_allsites)
+    ch_sitesfinal = ALLSITES_TO_SITESFINAL_edited_grouping_local.out.sitesfinal
 
     //we also need to join the channels to be able to give it to the process as input
     ch_annotinput = ch_sitesfinal.merge(ch_refGenome)

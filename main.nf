@@ -1,19 +1,29 @@
 #!/usr/bin/env nextflow
 
 // Parameters
-params.samplesheet = '' // this sheet contains barcodes, processing parameters, LTR fragments, etc.
-params.demuxSampleSheet = '' // this sheet contains only barcodes for demuxing
+params.BCLorFASTQ = '' //options: BCL or FASTQ
 params.runfolderDir = ''
 params.projectName = ''
+
+params.samplesheet = '' // this sheet contains barcodes, processing parameters, LTR fragments, etc.
+params.demuxSampleSheet = '' // this sheet contains only barcodes for demuxing
 params.FASTQfolderDir = ''
+
 
 
 // Parameter validation
 //if (!params.samplesheet) error "Missing --samplesheet parameter, provide path to samplesheet"
 if (!params.runfolderDir) error "Missing --runfolderDir parameter. provide path to BCL data folder or tarball"
 if (!params.projectName) error "Missing --projectName parameter, provide the name of the project to organize the result folders"
-if (!params.FASTQfolderDir) error "Missing --FASTQfolderDir parameter, provide path to the folder with Undetermined FASTQ files"
-if (!params.demuxSampleSheet) error "Missing --demuxSampleSheet parameter, provide path to the barcode samplesheet for demuxing"
+if (!params.BCLorFASTQ) error "Missing --BCLorFASTQ parameter, provide the type of data: BCL or FASTQ"
+if (params.BCLorFASTQ != 'BCL' && params.BCLorFASTQ != 'FASTQ')  error "--BCLorFASTQ parameter must be either BCL or FASTQ"
+if (params.BCLorFASTQ == 'FASTQ') {
+    if (!params.FASTQfolderDir) error "Missing --FASTQfolderDir parameter, provide path to the folder with Undetermined FASTQ files"
+    if (!params.demuxSampleSheet) error "Missing --demuxSampleSheet parameter, provide path to the barcode samplesheet for demuxing"
+} else {
+    if (!params.samplesheet) error "Missing --samplesheet parameter, provide path to samplesheet"
+}
+
 
 // Log info
 
@@ -23,17 +33,22 @@ log.info "Using data from directory: ${params.runfolderDir}"
 
 // MAIN
 
-include { PREPROCESSING_wfl } from './subworkflows/local/preprocessing/main_fastq'
+if (params.BCLorFASTQ == 'BCL') {
+    include { PREPROCESSING_wfl } from './subworkflows/local/preprocessing/main_bcl'
+} else {
+    include { PREPROCESSING_wfl } from './subworkflows/local/preprocessing/main_fastq'
+}
 include { ALIGNMENT_wfl } from './subworkflows/local/alignment/main'
-include { POSTPROCESSING_twice_wfl } from './subworkflows/local/postprocessing/main'
-
-// Create necessary input tuple for bcl2fastq
-
-// Channel
-//     .of( tuple([id: 'run1'], file(params.samplesheet), file(params.runfolderDir, type: 'dir')) )
-//     .set { ch_bcl_input }
+include { POSTPROCESSING_wfl } from './subworkflows/local/postprocessing/main'
 
 
+if (params.BCLorFASTQ == 'BCL') {
+    // Create necessary input tuple for bcl2fastq
+
+    Channel
+        .of( tuple([id: 'run1'], file(params.samplesheet), file(params.runfolderDir, type: 'dir')) )
+        .set { ch_bcl_input }
+}
 
 // Workflow
 workflow {
@@ -112,14 +127,17 @@ workflow {
             .set { ch_processing_params }
 
 // ************************************* WORKFLOW *************************************
-    //PREPROCESSING_wfl(ch_bcl_input, ch_linkers, ch_primer_ltr, file('vector.fasta') )
-    PREPROCESSING_wfl(ch_linkers, ch_primer_ltr, file('vector.fasta') )
+    if (params.BCLorFASTQ == 'BCL') {
+        PREPROCESSING_wfl(ch_bcl_input, ch_linkers, ch_primer_ltr, file('vector.fasta') )
+    } else {
+        PREPROCESSING_wfl(ch_linkers, ch_primer_ltr, file('vector.fasta') )
+    }
     def ch_short_removed = PREPROCESSING_wfl.out.ch_short_removed
 
     ALIGNMENT_wfl(ch_short_removed, ch_refGenome)
     def ch_aligned = ALIGNMENT_wfl.out.ch_aligned
 
-    POSTPROCESSING_twice_wfl(ch_aligned, ch_processing_params, ch_refGenome)
+    POSTPROCESSING_wfl(ch_aligned, ch_processing_params, ch_refGenome)
 
 
 }
