@@ -10,10 +10,8 @@ process BAM_TO_ALLSITES_local {
 
     script:
     """
-    #log the input parameters
-    echo "minPctIdent: ${minPctIdent}"
 
-    bam_to_allsites.py ${deduped} ${sample}_allSites.tsv ${maxAlignStart} ${minPctIdent} ${maxFragLength} ${sample}
+    bam_to_allsites_start_by_strand.py "${deduped}" "${sample}_allSites.tsv" "${maxAlignStart}" "${minPctIdent}" "${maxFragLength}" "${sample}"
 
     """
 }

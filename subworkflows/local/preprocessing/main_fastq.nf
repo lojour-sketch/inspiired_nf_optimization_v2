@@ -116,7 +116,6 @@ workflow PREPROCESSING_wfl {
         ch_ltr_chunks
         .join( ch_linkers )
         .set { ch_joined_input }
-        ch_ltr_chunks.view { "LTR chunks channel: ${it}" }
 
         RCremoval_inspiired_local(ch_joined_input)
         def ch_rc_removed = RCremoval_inspiired_local.out.reads

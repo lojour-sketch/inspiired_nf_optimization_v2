@@ -111,22 +111,17 @@ with open(f"{sample}_tmpFile.tsv", "r", newline="") as infile, open(f"{sample}_a
 
                     start_r1 = int(r1["start"])
                     start_r2 = int(r2["start"])
-                    if strand =="+":
-                        start = start_r2
-                        end = start_r1
-                    else:
-                        start = start_r1
-                        end = start_r2
-                    #we ensure that start is always less than end, avoiding outward facing reads
-                    if start > end:
-                        start, end = end, start
+                    #We will assign the start position to the R2 start when the strand is +, and to the R1 start when the strand is -
+                    #we do this because we cannot create a GRanges object with start > end, so we will always have start < end, but we will keep the strand information
+                    start = start_r2 if strand == "+" else start_r1
+                    end = start_r1 if strand == "+" else start_r2
                     
                     #to create the revmap, we use the line numbers of the reads in the tmp file
                     revmap = f"{pair_reads[0]['line_num']},{pair_reads[1]['line_num']}"
                     ranges = f"{start}-{end}"
                     pairingID += 1
                     writer.writerow([chrname, start, end, strand, revmap, pairingID, sample, last_readname])
-                
+
             #reset for next read
             pair_reads = []
             last_readname = readname
@@ -140,16 +135,11 @@ with open(f"{sample}_tmpFile.tsv", "r", newline="") as infile, open(f"{sample}_a
 
         start_r1 = int(r1["start"])
         start_r2 = int(r2["start"])
-        if strand =="+":
-            start = start_r2
-            end = start_r1
-        else:
-            start = start_r1
-            end = start_r2
-        #we ensure that start is always less than end, avoiding outward facing reads
-        if start > end:
-            start, end = end, start
-        
+        #We will assign the start position to the R2 start when the strand is +, and to the R1 start when the strand is -
+        #we do this because we cannot create a GRanges object with start > end, so we will always have start < end, but we will keep the strand information
+        start = start_r2 if strand == "+" else start_r1
+        end = start_r1 if strand == "+" else start_r2
+
         revmap = f"{pair_reads[0]['line_num']},{pair_reads[1]['line_num']}"
         ranges = f"{start}-{end}"
         pairingID += 1
