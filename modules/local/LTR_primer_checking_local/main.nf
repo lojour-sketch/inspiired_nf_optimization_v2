@@ -1,7 +1,5 @@
 process LTRchecking_seqkit_local {
 
-    cpus 6
-
     publishDir "${params.runfolderDir}/../results/8_LTR_presence/${params.projectName}", mode: 'symlink', overwrite: true
 
     input:

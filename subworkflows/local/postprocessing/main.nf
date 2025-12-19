@@ -1,7 +1,6 @@
 include { INDEX_SORT_BAM_local } from '../../../modules/local/index_sort_bam_local/main'
 include { BAM_TO_ALLSITES_local } from '../../../modules/local/bam_to_allsites_local/main'
 include { ALLSITES_TO_SITESFINAL_edited_grouping_local } from '../../../modules/local/allsites_to_sitesfinal_local/main'
-include { ANNOTATE_SITES_local } from '../../../modules/local/annotate_sites_local/main'
 include { SITESFINAL_TO_POINTS_local } from '../../../modules/local/sitesfinal_to_points_local/main'
 
 workflow POSTPROCESSING_wfl {

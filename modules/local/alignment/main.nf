@@ -2,7 +2,6 @@ process ALIGNMENT_local {
 
     scratch true
     publishDir "${params.runfolderDir}/../results/14_alignment/${params.projectName}", mode: 'symlink', overwrite: true
-    memory '40GB'
 
     input:
     tuple val(sample), path(r1), path(r2), val(genome_index)

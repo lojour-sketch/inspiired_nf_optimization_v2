@@ -1,6 +1,6 @@
 process INDEX_SORT_BAM_local {
 
-    publishDir "${params.runfolderDir}/../results/15_index_sort_bam_singleend/${params.projectName}", mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/15_index_sort_bam/${params.projectName}", mode: 'symlink', overwrite: true
 
     input:
     tuple val(sample), path(aligned)

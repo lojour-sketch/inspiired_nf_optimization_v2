@@ -32,8 +32,7 @@ workflow ALIGNMENT_wfl {
     // Now pass the combined channel to alignment
     ALIGNMENT_local(ch_alignment_input)
     ALIGNMENT_local.out.aligned.set{ ch_aligned }
-    // do we make different channels for different types of alignment? chimeras, multimapped, uniquely mapped?
-
+    
     emit:
     ch_aligned
 

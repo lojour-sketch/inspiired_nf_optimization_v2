@@ -67,7 +67,7 @@ if (nrow(hits.v.2) > 0) {
     hits.v.2$baseName <- get_base_name(hits.v.2$qName)
 }
 
-## now we merge the dataframes to get the reads that have vector in both pairs. we will only remove these    
+## now we merge the dataframes to get the reads that have vector in both pairs. we will only remove these, as in INSPIIRED    
 hits.v <- try({
     if (nrow(hits.v.1) > 0 && nrow(hits.v.2) > 0) {
         merge(hits.v.1[, c("baseName", "tStart")],

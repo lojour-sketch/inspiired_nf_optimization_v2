@@ -1,0 +1,95 @@
+---
+name: ALLSITES_TO_SITESFINAL_edited_grouping_local
+
+description: |
+
+      Insertions are initially deduplicated by collapsing all events that share the same **chromosome, start, end, and strand**. This step ensures that identical insertions, which may arise from technical replication or multiple reads mapping to the same genomic coordinates, are represented only once. By doing so, we avoid artificially inflating counts and obtain a set of unique insertion events across the genome. 
+      In the metadata we have the **counts** column (number of read pairs with identical insertion ID), which allows us to see how many duplicates we have per insertion.
+      The **revmap** metadata column (indices of all reads mapping to an exact same insertion) allows us to trace back the insertions are grouped as a single site.
+
+      **Script details:**
+        The deduplication algorithm (dereplicateSites_edited) creates a unique identifier for each genomic position and collapses all reads mapping to the same position. 
+        The `revmap` metadata allows tracing back to original reads for downstream analysis.
+
+      **Use case:**
+        Accurately counts unique integration events and avoid inflating site numbers due to PCR duplicates or multiple reads from the same integration event.
+tools:
+  - "r-base":
+      description: "R statistical computing environment"
+      homepage: "https://www.r-project.org/"
+  - "bioconductor-genomicranges":
+      description: "Representation and manipulation of genomic intervals"
+      homepage: "https://bioconductor.org/packages/GenomicRanges"
+  - "bioconductor-hireadsprocessor":
+      description: "Functions to process gene therapy vector integration sites"
+      homepage: "https://bioconductor.org/packages/hiReadsProcessor"
+input:
+    - - sample:
+            type: string
+            description: Sample name
+      - allsites:
+            type: file
+            description: | 
+                        TSV file containing all insertion sites detected by INSPIIRED.
+                        The file contains the folowing columns:
+                        - seqnames: chromosome name
+                        - start: start position of the insertion site
+                        - end: end position of the insertion site
+                        - strand: strand of the insertion site
+                        - revmap: number of the rows in the temporal file form previous process (tmpFile from BAM_TO_ALLSITES) that correspond to the two reads forming the pair that contains the insertion site
+                        - pairingID: ID of the pair that contains the insertion site
+                        - samplename: sample name
+                        - ID: ID of the reads forming the pair
+      - indivFile:
+            type: file
+            description: | 
+                        TSV file containing all insertion sites detected by INSPIIRED, not paired.
+                        The file contains the folowing columns:
+                        - readname: read name
+                        - chr: chromosome name
+                        - from: read number (R1 or R2)
+                        - strand: strand of the insertion site
+                        - start: start position of the insertion site
+                        - end: end position of the insertion site
+                        - cigar: cigar string of alignments
+                        - qStart: number of bases soft-clipped at 5' end
+                        - PercIdent: percent identity of the alignment
+                        - tBaseInsert: number of bases inserted in the target (reference)
+                        - flag: flag of the alignment
+                        - tags: tags of the alignment
+            pattern: "*_individualInsertions_notPaired.tsv"
+output:
+    - sitesfinal:
+        - - sample:
+                type: string
+                description: Sample name
+          - "*_allsites.rds":
+                type: file
+                description: | 
+                        RDS file containing a GRanges object with all insertion sites
+                        detected by INSPIIRED.
+                        The file contains the folowing columns:
+                        - seqnames: chromosome name
+                        - ranges: start and end position of the insertion site
+                        - strand: strand of the insertion site
+                        - revmap: number of the rows in the temporal file form previous process (tmpFile from BAM_TO_ALLSITES) that correspond to the two reads forming the pair that contains the insertion site
+                        - pairingID: ID of the pair that contains the insertion site
+                        - samplename: sample name
+                pattern: "*_allsites.rds"
+          - "*_sitesfinal.rds":
+                type: file
+                description: |
+                        Deduplicated integration sites as GRanges object (RDS format).
+                        Contains unique genomic positions with aggregated metadata.
+                        This is the PRIMARY output for downstream analysis.
+                        The file contains the folowing columns:
+                        - seqnames: chromosome name
+                        - ranges: start and end position of the insertion site
+                        - strand: strand of the insertion site
+                        - revmap: number of the rows in allsites file that correspond to the reads that have been collapsed in sitesfinal to remove duplicats.
+                        - pairingID: ID of the pair that contains the insertion site. Takes one from the collapsed group.Same IDs as in allsites file.
+                        - samplename: sample name
+                        - counts: number of reads collapsed to form the row
+                pattern: "*_sitesfinal.rds"
+authors:
+    - "@liberentaizp"

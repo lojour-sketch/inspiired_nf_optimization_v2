@@ -1,0 +1,127 @@
+---
+name: BAM_TO_ALLSITES_local
+
+description: |
+      Extract potential viral integration sites from aligned BAM files.
+      This module identifies putative integration sites by analyzing paired-end reads that are aligned against host genomic sequences.
+      The process applies stringent quality filters and determines integration coordinates based on read orientation.
+      
+      The start position in the files corresponds to the R1 start in + strands and to the R2 start in - strands.
+      
+
+      ***Script details:***
+      
+      1. ** Module and input loading **
+        - Loads the necessary modules and input files passed as arguments to the script
+
+      2. ** Quality filtering **
+        - Reads are filtered by proper pairing and mapping quality (pysam module)
+          - https://pysam.readthedocs.io/en/stable/api.html#pysam.AlignedSegment.is_proper_pair
+            This ensures INSPIIRED's three criteria for a proper pair:
+              - Opposite strands
+              - One read from each read (1 R2 1 R2)
+              - Correct downstream orientation
+        - Removes duplicates, secondary and supplementary alignments (pysam module)
+          - https://pysam.readthedocs.io/en/stable/api.html#pysam.AlignedSegment.is_duplicate
+          - https://pysam.readthedocs.io/en/stable/api.html#pysam.AlignedSegment.is_secondary
+          - https://pysam.readthedocs.io/en/stable/api.html#pysam.AlignedSegment.is_supplementary
+        - Filters by INSPIIRED criteria:
+            - **Percent identity** threshold is applied (hyperparameter added in SampleSheet)
+                As the percent identity is not calculated the same way in STAR and INSPIIRED (they use pairwiseAlignment), we need to calculate it ourselves. We use the CIGAR string to calculate the number of matches and mismatches, and then calculate the percent identity as: 
+                100 * matches / queryLength
+            - **Soft-clipping limits** are applied (hyperparameter added in SampleSheet)
+                We use the CIGAR string to calculate the number of soft-clipped bases at the 5' end.
+                STAR produces CIGAR strings as a list of tuples, where the first element is the operation and the second is the length.
+                We check if the first element is a soft-clipping operation (4), and if so, we sum the length of the soft-clipped bases.
+            - **Base insertion limits** are applied (hyperparameter added in SampleSheet). (INSPIIRED default: 5bp)
+                tBaseInsert variable in blat alignments means the number of bases inserted in the target (reference)
+                However, in CIGAR nomenclature, these are represented as deletions in the query (read), so we take the cigartuples deletion operation as tBaseInsert
+            - **Alignment size** is limited (hyperparameter added in SampleSheet). (INSPIIRED default: 2500bp)
+
+        This first part creates a temporary file with all individual filtered reads (R1 and R2 reads, separated)
+
+      3. **Paired-end processing **
+        - Pairs all reads by line number and read name (our BAM must be sorted by name, which we did in previous process)
+            If one read is left without a pair or we have three reads with the same name, they are discarded.
+        - The start position of the insertions is the R1 start in + strands and the R2 start in - strands.
+            This strategy captures the genomic breakpoint where viral DNA integrated into the host genome
+      
+      4.  **Output generation**
+        - Creates TSV with one entry per valid read pair
+        - Includes revmap linking to original read line numbers in the temporary file.
+        - Assigns sequential pairing IDs for tracking
+
+      **Parameters**
+        - **minPctIdent**: Ensures reads are genuine alignments, not random matches
+        - **maxAlignStart**: Limits soft-clipping at 5' end (vector/adapter removal)
+        - **tBaseInsert < 5**: Avoids reads with large reference deletions (misalignments)
+        - **maxFragLength**: Excludes chimeric fragments or mis-paired reads
+      
+      **Important notes:**
+        - Input BAM MUST be sorted by read name (not coordinate)
+        - Only properly paired reads contribute to integration sites
+        - Each valid pair generates ONE integration site
+        - Intermediate tmpFile contains all filtered individual reads
+        - Final allSites.tsv contains only successfully paired sites
+tools:
+  - "python":
+      description: "Python interpreter"
+      homepage: "https://www.python.org/"
+  - "pysam":
+      description: "Python interface for SAM/BAM files"
+      homepage: "https://pysam.readthedocs.io/"
+input:
+    - - sample:
+          type: string
+          description: Sample name
+      - bam:
+          type: file
+          description: Indexed and sorted BAM file
+      - minPctIdent:
+          type: string
+          description: Minimum percent identity. Hyperparameter defined in SampleSheet
+      - maxAlignStart:
+          type: string
+          description: Maximum soft-clipping at 5' end. Hyperparameter defined in SampleSheet
+      - maxFragLength:
+          type: string
+          description: Maximum fragment length. Hyperparameter defined in SampleSheet
+output:
+    - allsites:
+        - - sample:
+                type: string
+                description: Sample name
+          - "*_allSites.tsv":
+                type: file
+                description: | 
+                        TSV file containing all insertion sites detected by INSPIIRED.
+                        The file contains the folowing columns:
+                        - seqnames: chromosome name
+                        - start: start position of the insertion site
+                        - end: end position of the insertion site
+                        - strand: strand of the insertion site
+                        - revmap: number of the rows in the temporal file form previous process (tmpFile from BAM_TO_ALLSITES) that correspond to the two reads forming the pair that contains the insertion site
+                        - pairingID: ID of the pair that contains the insertion site
+                        - samplename: sample name
+                        - ID: ID of the reads forming the pair
+                pattern: "*_allSites.tsv"
+          - "*_individualInsertions_notPaired.tsv":
+                type: file
+                description: | 
+                        TSV file containing all insertion sites detected by INSPIIRED, not paired.
+                        The file contains the folowing columns:
+                        - readname: read name
+                        - chr: chromosome name
+                        - from: read number (R1 or R2)
+                        - strand: strand of the insertion site
+                        - start: start position of the insertion site
+                        - end: end position of the insertion site
+                        - cigar: cigar string of alignments
+                        - qStart: number of bases soft-clipped at 5' end
+                        - PercIdent: percent identity of the alignment
+                        - tBaseInsert: number of bases inserted in the target (reference)
+                        - flag: flag of the alignment
+                        - tags: tags of the alignment
+                pattern: "*_individualInsertions_notPaired.tsv"
+authors:
+    - "@liberentaizp"

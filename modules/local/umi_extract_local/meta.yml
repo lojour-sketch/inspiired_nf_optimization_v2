@@ -1,0 +1,60 @@
+name: UMI_EXTRACT_local
+
+description: |
+      This module extracts the UMI sequence from the read1 FASTQ file.
+      As we removed the sample linker from all read1s in the previous process, the UMI sequence is the first 12 (or 13 if we removed one nt from the sample linker) of the R1 reads.We save the UMI sequence in the read headers.
+      We need to remove all reads that do not contain the <UMI><common_linker> sequence in the first part, so with `umi_tools extract` we:
+      1. Remove all reads that do not contain the <UMI><common_linker> sequence in the first part
+      2. From the reads that contain both sequences, we save the UMI sequence in the read header and we remove both sequences form the read, leaving the start of the clean genomic DNA intact.
+
+      For this we will use the umi_tools extract command, with the following parameters:
+
+      **Parameter configuration:**
+        1. *Extraction method:*
+          - We will use the regex option, as our barcode pattern contains regular expressions
+        2. *Bc-pattern:*
+          - We will use the pattern "(?P<umi_1>[ATCGN]{${umi_length}})(?P<cell_2>${linker2})"
+          - As we alraedy removed the sample liker, the first thing we have is the UMI sequence, followed by the common linker, that will help us search for the umi
+          - Using this pattern we also make sure that all reads contain the umi sequence AND the common linker, if not, they are removed.
+        3. *Read inputs and outputs:*
+          - I: Read1 input file
+          - S: Read1 output file
+          - Read2-in: Read2 input file
+          - Read2-out: Read2 output file
+        4. *Log file:*
+          - We will save the log file in the same directory as the output files
+tools:
+  - umi_tools:
+    - description: umi_tools is a tool for handling Unique Molecular Identifiers (UMIs) from 10X Genomics data.
+    - homepage: https://umi-tools.readthedocs.io/en/latest/reference/extract.html?highlight=extract#module-umi_tools.extract
+input:
+  - - sample_id:
+      - type: string
+        description: Sample name
+    - linker1:
+      - type: string
+        description: Sample unique linker
+    - linker2:
+      - type: string
+        description: Common linker
+    - reads:
+      - type: list
+        description: List that contains the paths to the R1 and R2 FASTQ read files. The first element is the R1 read file, and the second element is the R2 read file.
+    - was_modified:
+      - type: boolean
+        description: True if the sample unique linker was modified, False otherwise
+output:
+  - - sample_id:
+      - type: string
+        description: Sample name
+    - R1:
+      - type: file
+        description: Path to the UMI extracted R1 FASTQ read file
+    - R2:
+      - type: file
+        description: Path to the UMI extracted R2 FASTQ read file
+    - log:
+      - type: file
+        description: Path to the log file
+authors:
+  - "@liberentaizp"

@@ -1,0 +1,42 @@
+---
+name: ALIGNMENT_local
+
+description: |
+      Aligns the R1 and R2 reads to the reference genome in a **paired-end manner**, in order to get the regions in the genome where the insertion occured.
+      INSPIIRED aligns both reads separately, and then merges them together after filtering. By aligning by pairs, we can reduce the number of multihits and chimeras. 
+      This module uses the STAR aligner to align the reads to the reference genome.
+
+tools:
+    - STAR:
+        description: |
+            STAR is a fast universal RNA-seq aligner. In our case, we use it to align
+            the R1 and R2 reads to the reference genome, in order to get the regions in the genome 
+            where the insertion occured.
+        homepage: https://github.com/alexdobin/STAR
+        documentation: https://github.com/alexdobin/STAR/blob/master/doc/STARmanual.pdf
+        doi: doi.org/10.1093/bioinformatics/bts635
+
+input:
+    - - sample:
+            type: string
+            description: Sample name
+      - r1:
+            type: file
+            description: FastQ file containing all R1 reads.
+      - r2:
+            type: file
+            description: FastQ file containing all R2 reads.
+      - genome_index:
+            type: string
+            description: Path to the index file, indexed by the GENOME_INDEXING_local process.
+output:
+    - aligned:
+        - - sample:
+                type: string
+                description: Sample name
+          - "*.Aligned.*":
+                type: file
+                description: STAR alignment output files (BAM, logs, etc)
+                pattern: "*.Aligned.*"
+authors:
+    - "@liberentaizp"

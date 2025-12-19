@@ -3,7 +3,7 @@ process UMIEXTRACT_local {
     publishDir "${params.runfolderDir}/../results/2_extractedumi/${params.projectName}", mode: 'symlink', overwrite: true
 
     input:
-    tuple val(sample_id), val(linker1), val(linker2), path(reads)
+    tuple val(sample_id), val(linker1), val(linker2), path(reads), val(was_modified)
 
     output:
     tuple val(sample_id), path("${sample_id}.umi_R1.fastq.gz"), path("${sample_id}.umi_R2.fastq.gz"), path("${sample_id}.umi_extract.log")
@@ -11,9 +11,12 @@ process UMIEXTRACT_local {
 
     script:
     def (r1, r2) = reads
-    //umi is 12nts long, but in the first sample is 13 nt long. it is followed by the common linker. 
-    //we don't use the sample unique linker because they are used by bcl2fastq as demultiplexing information and they are then removed from the sequence and added to the header
-    def bc_pattern = "(?P<cell_1>${linker1})(?P<umi_1>[ATCGN]{12})(?P<cell_2>${linker2})"
+    //in order for this script to be available for every size of umi, we will add one nt to the umis that have a sample linker longer than the mean length
+    //we don't use the sample unique linker because they are used by bcl2fastq and fqtk as demultiplexing information and they are then removed from the sequence and added to the header
+    def umi_length = was_modified ? 13 : 12
+
+    def bc_pattern = "(?P<umi_1>[ATCGN]{${umi_length}})(?P<cell_2>${linker2})"
+    
     """
     umi_tools extract \
         --extract-method=regex \

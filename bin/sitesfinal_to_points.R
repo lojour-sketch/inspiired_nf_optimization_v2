@@ -90,7 +90,7 @@ df$strand <- as.character(strand(sites.final))
 #para inserciones en el strand - colapsamos os que tienen el mismo end (insercion de r2)
 df_collapsed <- df %>%
   mutate(r2_pos = if_else(strand == "+", start, end)) %>%
-  group_by(seqnames, r2_pos) %>%
+  group_by(seqnames, strand, r2_pos) %>%
   summarise(
     counts = as.integer(n()),
     strand = first(strand),
@@ -113,7 +113,7 @@ sitescollapsed <- GRanges(
   samplename = df_collapsed$samplename
 )
 
-
+#annotation and plotting
 peak <- sitescollapsed
     chromosomes = c(paste0("chr",1:22), "chrX", "chrY")
 

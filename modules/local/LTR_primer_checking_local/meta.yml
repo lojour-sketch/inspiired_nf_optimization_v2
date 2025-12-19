@@ -1,0 +1,69 @@
+name: LTRchecking_seqkit_local
+
+descriptiom: |
+  This module checks if the R2 reads contain the primers and LTR sequences. 
+  We keep only the R2 reads that start with primer + LTR, and then we remove these sequences from all reads. In R1 reads, we remove all reads which pair did not contain the primer+LTR start.
+
+  **Script description:**
+  1. *Search for reads with primer + LTR*
+    - We search for reads that START with primer+LTR in R2 reads with seqkit
+  2. *Remove paired reads from R1*
+    - We remove all reads in R1 that pair with the R2 reads that did not have the primer+LTR start, to maintain the paired structure.
+    - We do this by searching for read name
+  3. *Remove primer+LTR sequences from R2*
+    - The R2 reads that we kept contain the primer+LTR sequence, and we need to remove it in otder to get the clean genomic DNA sequence.
+    - We do this with seqkit subseq
+tools:
+  - seqkit:
+    - description: SeqKit is a cross-platform and ultrafast toolkit to process sequence files.
+    - homepage: https://bioinf.shenwei.me/seqkit/
+input:
+  - - sample:
+      - type: string
+        description: Sample name
+    - reads:
+      - type: list
+        description: List that contains the paths to the R1 and R2 FASTQ read files. The first element is the R1 read file, and the second element is the R2 read file.
+    - primer:
+      - type: string
+        description: Primer sequence
+    - LTR:
+      - type: string
+        description: LTR sequence
+    - largeLTRFrag:
+      - type: string
+        description: Large LTR fragment sequence
+    - project:
+      - type: string
+        description: Project name
+    - mingDNA:
+      - type: integer
+        description: Minimum genomic DNA length
+output:
+  - reads:
+      - - sample:
+          - type: string
+            description: Sample name
+        - R1:
+          - type: file
+            description: Path to the cleaned R1 FASTQ read file
+        - R2:
+          - type: file
+            description: Path to the cleaned R2 FASTQ read file
+        - primer:
+          - type: string
+            description: Primer sequence
+        - LTR:
+          - type: string
+            description: LTR sequence
+        - largeLTRFrag:
+          - type: string
+            description: Large LTR fragment sequence
+        - project:
+          - type: string
+            description: Project name
+        - mingDNA:
+          - type: integer
+            description: Minimum genomic DNA length
+authors:
+  - "@liberentaizp"
