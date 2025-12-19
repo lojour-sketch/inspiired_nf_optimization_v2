@@ -1,9 +1,11 @@
+include { NORMALIZE_index_length_local } from '../../../modules/local/normalize_index_length_local/main'
+include { CREATE_demux_samplesheet_local } from '../../../modules/local/create_demux_samplesheet_local/main'
 include { DEMUXING_FASTQ_local } from '../../../modules/local/demuxing_fastq_local/main'
 include { UMIEXTRACT_local } from '../../../modules/local/umi_extract_local/main'
 include { FASTQCANDTRIM_wfl } from '../../../subworkflows/nf-core/fastqc_fastq_umitools_trimgalore/main'
 include { MULTIQC_wfl } from '../../../subworkflows/nf-core/multiqc/main'
-include { LTRchecking_seqkit_local } from '../../../modules/local/LTR_primer_checking_local/main_seqkit_fullfq'
-include { RCremoval_inspiired_local } from '../../../modules/local/rcremoval_local/main_inspiired_like'
+include { LTRchecking_seqkit_local } from '../../../modules/local/LTR_primer_checking_local/main'
+include { RCremoval_inspiired_local } from '../../../modules/local/rcremoval_local/main'
 include { FINDVECTOR_local } from '../../../modules/local/find_vector_local/main'
 include { SHORTREMOVE_local } from '../../../modules/local/short_seq_removal_local/main'
 
@@ -12,17 +14,42 @@ include { SHORTREMOVE_local } from '../../../modules/local/short_seq_removal_loc
 workflow PREPROCESSING_wfl {
 
     take:
+    ch_first_input
     ch_linkers          //input type: [sample, unique_linker, common_linker]
     ch_primer_ltr       //input type: [sample, primer, ltrbit, largeLTRFrag, mingDNA]
     vectorfasta
 
     main:
 
-    ///////////////////////// Passing undetermined fastq data into fastq per sample (demuxing) /////////////////////////
-    ch_demux_fastq = Channel.of([params.FASTQfolderDir, file(params.demuxSampleSheet)])
+    // the first thing we need to do is homogeneize the indexes. some indexes contain more nucleotides than the rest
+    // we need all indexes to be the same length, so we will remove the excess nucleotides from the longest indexes, 
+    // and this will make their UMIs 1 nt longer, which we will handle in the UMI_extract process
 
-    DEMUXING_FASTQ_local(ch_demux_fastq)
-    DEMUXING_FASTQ_local.out.fastq.set { ch_demux_fastq }
+        NORMALIZE_index_length_local(ch_first_input)
+            NORMALIZE_index_length_local.out.normalized.set { ch_bcl_input_normalized }
+            NORMALIZE_index_length_local.out.modified_samples
+                .splitText( by: 1 )
+                .map { it.trim().toString() }
+                .collect()
+                .map { list ->
+                    [list]
+                }
+                .ifEmpty([[]])
+                .set { ch_modified_samples }
+
+    // as we will be using the demuxing_fastq_local process, we need to create a samplesheet with the barcodes
+        CREATE_demux_samplesheet_local(ch_bcl_input_normalized)
+            CREATE_demux_samplesheet_local.out.demux_sheet.set { ch_demux_sheet }
+
+    ///////////////////////// Passing undetermined fastq data into fastq per sample (demuxing) /////////////////////////
+        ch_demux_input = Channel.of([file(params.FASTQfolderDir, type: 'dir'), params.readStructure])
+            .combine(ch_demux_sheet)
+            .map { fastq_dir, read_structure, demux_sheet ->
+                tuple(fastq_dir, demux_sheet, read_structure)
+            }
+
+        DEMUXING_FASTQ_local(ch_demux_input)
+        DEMUXING_FASTQ_local.out.fastq.set { ch_demux_fastq }
 
     ///////////////////////// Extracting UMI from reads and adding it to headers /////////////////////////
         //crete necessary input channel for umi_extract_local
@@ -41,16 +68,18 @@ workflow PREPROCESSING_wfl {
             }
             .groupTuple(sort: true)
 
-        // now we combine the reads channel with the linkers channel per sample
+        // Combinar con info de muestras modificadas
         ch_reads_by_sample
             .join(ch_linkers) //join by sample_id
-            .map { sample_id, reads, linker1, linker2 ->
-                    tuple(sample_id, linker1, linker2, reads)
+            .combine(ch_modified_samples)
+            .map { sample_id, reads, linker1, linker2, modified_list ->
+                def was_modified = modified_list.contains(sample_id)
+                tuple(sample_id, linker1, linker2, reads, was_modified)
             }
             .set { ch_umi_extract_input }
-        //now running the umi_extract process
+        
         UMIEXTRACT_local(ch_umi_extract_input)
-            UMIEXTRACT_local.out.set { ch_umi_fastq}
+        UMIEXTRACT_local.out.set { ch_umi_fastq }
         //changing umi output for FASTQCANDTRIM process. 
         def ch_umi_out = ch_umi_fastq
             .map { sample_id, fq1, fq2, log ->
@@ -71,7 +100,7 @@ workflow PREPROCESSING_wfl {
             true,                   //skip_umi_extract
             false,                  // skip_trimming
             0,                   // umi_discard_read (0 , 1 or 2)
-            10000,                   // min_trimmed_reads (default 10000)
+            1,                   // min_trimmed_reads (default 10000)
         )
 
         def fastqc_html          = FASTQCANDTRIM_wfl.out.fastqc_html

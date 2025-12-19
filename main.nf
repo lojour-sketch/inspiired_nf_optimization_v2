@@ -4,25 +4,29 @@
 params.BCLorFASTQ = '' //options: BCL or FASTQ
 params.runfolderDir = ''
 params.projectName = ''
-
 params.samplesheet = '' // this sheet contains barcodes, processing parameters, LTR fragments, etc.
-params.demuxSampleSheet = '' // this sheet contains only barcodes for demuxing
-params.FASTQfolderDir = ''
 
+params.FASTQfolderDir = '' // path to the folder with Undetermined FASTQ files (only for FASTQ input)
+params.readStructure = '' // this is the read structure of the FASTQ files (only for FASTQ input)
+params.instrument = '' // this is the sequencing machine used
 
 
 // Parameter validation
-//if (!params.samplesheet) error "Missing --samplesheet parameter, provide path to samplesheet"
+if (!params.samplesheet) error "Missing --samplesheet parameter, provide path to samplesheet"
 if (!params.runfolderDir) error "Missing --runfolderDir parameter. provide path to BCL data folder or tarball"
 if (!params.projectName) error "Missing --projectName parameter, provide the name of the project to organize the result folders"
 if (!params.BCLorFASTQ) error "Missing --BCLorFASTQ parameter, provide the type of data: BCL or FASTQ"
 if (params.BCLorFASTQ != 'BCL' && params.BCLorFASTQ != 'FASTQ')  error "--BCLorFASTQ parameter must be either BCL or FASTQ"
 if (params.BCLorFASTQ == 'FASTQ') {
     if (!params.FASTQfolderDir) error "Missing --FASTQfolderDir parameter, provide path to the folder with Undetermined FASTQ files"
-    if (!params.demuxSampleSheet) error "Missing --demuxSampleSheet parameter, provide path to the barcode samplesheet for demuxing"
-} else {
-    if (!params.samplesheet) error "Missing --samplesheet parameter, provide path to samplesheet"
+    if (!params.readStructure) error "Missing --readStructure parameter, provide the read structure of the FASTQ files"
+    def valid_instruments = ['MiSeq', 'NextSeq2000', 'NextSeq500']
+    if (!params.instrument) error "Missing --instrument parameter, provide the sequencing machine used. Supported instruments: ${valid_instruments.join(', ')}"
+    // Check if the instrument is supported. 
+    // We need the instrument to know which script to use in the create_demux process to reverse complement the index2 sequence.
+    if (!(params.instrument in valid_instruments)) error "--instrument parameter must be one of the following: ${valid_instruments.join(', ')}. If you are using another instrument, the workflow code must be changed after checking \"Guidelines for reverse complementing i5 sequences for demultiplexing\" from Illumina."
 }
+
 
 
 // Log info
@@ -41,21 +45,18 @@ if (params.BCLorFASTQ == 'BCL') {
 include { ALIGNMENT_wfl } from './subworkflows/local/alignment/main'
 include { POSTPROCESSING_wfl } from './subworkflows/local/postprocessing/main'
 
-
-if (params.BCLorFASTQ == 'BCL') {
-    // Create necessary input tuple for bcl2fastq
-
-    Channel
-        .of( tuple([id: 'run1'], file(params.samplesheet), file(params.runfolderDir, type: 'dir')) )
-        .set { ch_bcl_input }
-}
-
 // Workflow
 workflow {
 
 // ******************************** NECESSARY CHANNELS ********************************
+        // Create necessary input tuple for preprocessing
+        Channel
+            .of( tuple([id: 'run1'], file(params.samplesheet), file(params.runfolderDir, type: 'dir')) )
+            .set { ch_first_input }
+        
+
         // we need a channel with the sample unique and common linkers to extract the umi
-            Channel
+        Channel
             .fromPath(params.samplesheet)
             .map { file ->
                 def lines = file.text.readLines()
@@ -65,9 +66,10 @@ workflow {
             }
             .splitCsv(header: true)
             .map { row ->
-                tuple(row.Sample_ID, row.sample_unique_linker, row.common_linker)
+                tuple(row.Sample_ID, row.index, row.common_linker)
             }
             .set { ch_linkers }
+
         // we need a channel with some samplesheet information as input for some of the processes
         Channel
             .fromPath(params.samplesheet)
@@ -82,6 +84,7 @@ workflow {
                 tuple(row.Sample_ID, row.primer, row.ltrbit, row.largeLTRFrag, row.Sample_Project, row.mingDNA)
             }
             .set { ch_primer_ltr }
+
         // we need a channel with the reference genome
         Channel.fromPath(params.samplesheet)
             .map { file ->
@@ -112,6 +115,7 @@ workflow {
                 return tuple(refGenome, refGenomeFile, refKnowngeneFile)
             }
             .set { ch_refGenome }
+
         //we need a channel with the processing parameters
         Channel.fromPath(params.samplesheet)
             .map { file ->
@@ -126,12 +130,24 @@ workflow {
             }
             .set { ch_processing_params }
 
+        // we need a channel with the vector sequence
+        Channel.fromPath(params.samplesheet)
+            .map { file ->
+                def lines = file.text.readLines()
+                def dataStart = lines.findIndexOf { it.startsWith('[Data]') } + 1
+                def csvLines = lines[dataStart..-1].join("\n")
+                return csvLines
+            }
+            .splitCsv(header: true)
+            .map { row ->
+                def vectorSeq = row.vectorSeq
+                return tuple("${params.runfolderDir}/${vectorSeq}")
+            }
+            .set { ch_vector }
+
 // ************************************* WORKFLOW *************************************
-    if (params.BCLorFASTQ == 'BCL') {
-        PREPROCESSING_wfl(ch_bcl_input, ch_linkers, ch_primer_ltr, file('vector.fasta') )
-    } else {
-        PREPROCESSING_wfl(ch_linkers, ch_primer_ltr, file('vector.fasta') )
-    }
+    
+    PREPROCESSING_wfl(ch_first_input, ch_linkers, ch_primer_ltr, ch_vector )
     def ch_short_removed = PREPROCESSING_wfl.out.ch_short_removed
 
     ALIGNMENT_wfl(ch_short_removed, ch_refGenome)

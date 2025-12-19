@@ -52,5 +52,5 @@ allSites_gr <- makeGRangesFromDataFrame(df, keep.extra.columns=TRUE, seqnames.fi
 
 sites.final <- dereplicateSites_edited(allSites_gr)
 
-saveRDS(allSites_gr, file=paste0(sample, "_allsites_nostandard.rds"))
+saveRDS(allSites_gr, file=paste0(sample, "_allsites.rds"))
 saveRDS(sites.final, file=paste0(sample, "_sitesfinal.rds"))

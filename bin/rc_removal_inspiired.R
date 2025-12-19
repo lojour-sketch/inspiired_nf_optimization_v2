@@ -8,12 +8,46 @@ read2 <- args[3]
 largeLTRfrag <- args[4]
 common_linker <- args[5]
 
+# DEBUGGING - Print everything
+cat("=== DEBUG INFO ===\n")
+cat("meta:", meta, "\n")
+cat("read1:", read1, "\n")
+cat("read2:", read2, "\n")
+cat("read1 exists:", file.exists(read1), "\n")
+cat("read2 exists:", file.exists(read2), "\n")
+cat("read1 size:", file.info(read1)$size, "bytes\n")
+cat("read2 size:", file.info(read2)$size, "bytes\n")
+cat("Working directory:", getwd(), "\n")
+cat("Files in working directory:\n")
+print(list.files())
+cat("==================\n")
+
 library(Biostrings)
 library(ShortRead)
 library(pwalign) #we need it for the pairwiseAlignment and nucleotideSubstitutionMatrix functions
 
+# Resolve to absolute real paths
+read1 <- normalizePath(read1, mustWork = TRUE)
+read2 <- normalizePath(read2, mustWork = TRUE)
+
 fq1 <- readFastq(read1)
 fq2 <- readFastq(read2)
+
+if (length(fq1) == 0 || length(fq2) == 0) {
+    cat("WARNING: One or both input files are empty. Creating empty output files. This could be due to the processing of control samples, or due to a problem with the input files.\n")
+    
+    # Create empty fastq files
+    output_file1 <- paste0(meta, ".rc_removed_R1.fastq.gz")
+    output_file2 <- paste0(meta, ".rc_removed_R2.fastq.gz")
+    
+    # Write empty compressed fastq files
+    empty_fq <- ShortReadQ()
+    writeFastq(empty_fq, output_file1, compress=TRUE)
+    writeFastq(empty_fq, output_file2, compress=TRUE)
+    
+    cat("Created empty output files successfully.\n")
+    quit(status=0)  # Exit successfully
+}
 
 # Verify they have the same number of reads initially
 if(length(fq1) != length(fq2)) {
@@ -23,6 +57,9 @@ if(length(fq1) != length(fq2)) {
 #R needs to convert the quality and the sequence to an specific format
 reads1 <- sread(fq1)
 reads2 <- sread(fq2)
+
+if (length(reads1) == 0) stop("reads1 has length 0")
+if (length(reads2) == 0) stop("reads2has length 0")
 
 qual1 <- quality(fq1)
 qual2 <- quality(fq2)
@@ -57,6 +94,8 @@ trim_overreading <- function(reads, qual, marker, maxMismatch=3) {
                                 gapExtension=1,
                                 type="overlap")
     
+    if (length(pattern(tmp)) == 0) stop("pairwiseAlignment returned zero patterns")
+
     #we convert the pairwisealignment output into a dataframe
     odf <- PairwiseAlignmentsSingleSubject2DF(tmp)
 
