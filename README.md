@@ -67,6 +67,10 @@ nextflow run main.nf \
     -resume
 ```
 
+## Workflow diagram
+
+![Workflow_diagram](Workflow_image)
+
 ## Output
 
 The output of the pipeline will be in the `results` folder. The folder structure will be as follows:
