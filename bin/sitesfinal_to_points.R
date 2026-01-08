@@ -161,7 +161,13 @@ peak <- sitescollapsed
     print(upsetplot(peakAnno))
     print(vennpie(peakAnno))
     print(upsetplot(peakAnno, vennpie = TRUE))
-    print(plotDistToTSS(peakAnno))
+    # Only plot if there are both upstream and downstream distances
+    distances <- as.data.frame(peakAnno)$distanceToTSS
+    if (sum(!is.na(distances)) > 0 && length(unique(sign(distances))) > 1) {
+        print(plotDistToTSS(peakAnno))
+    } else {
+        message("Skipping plotDistToTSS: not enough data on both sides of TSS")
+    }
     peakAnno.dfr <- as.data.frame(peakAnno)
     entrez_ids <- peakAnno.dfr$geneId
     entrez_ids <- entrez_ids[!is.na(entrez_ids)]
