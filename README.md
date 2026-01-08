@@ -6,6 +6,12 @@ This Nextflow pipeline is based in [INSPIIRED](https://github.com/BushmanLab/INS
 * Support for multiple samples
 * An alternative insertion site detection strategy that counts each exact insertion once and enables identification of clonal expansions
 
+
+## Workflow diagram
+
+![Workflow_diagram](Workflow_image)
+
+
 ## Pre-requirements
 
 In order to run this pipeline, some prerequisites must be met:
@@ -66,10 +72,6 @@ nextflow run main.nf \
     -with-trace reports/ProjectName_trace.txt \
     -resume
 ```
-
-## Workflow diagram
-
-![Workflow_diagram](Workflow_image)
 
 ## Output
 
