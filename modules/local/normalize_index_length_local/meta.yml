@@ -1,0 +1,42 @@
+name: normalize_index_length_local
+
+description: |
+      In various INSPIIRED runs, some sample unique linkers have different lengths. We need this sequence to demultiplex the data by samples, and we need it to be the same length for all samples. 
+      As the iSL (linker sequence) in INSPIIRED runs is like:
+      <Sample unique linker><UMI sequence><Common linker>
+      For the samples that have a longer sample sequence, we will remove the extra nucleotides and add them to the UMI sequence. For this, we remove the nts from the longest sample linkers and we save the names of their corresponding samples to later expand the length of their UMIs.
+
+      **Script description:**
+      1. *Load libraries and arguments*
+        - Libraries are: csv, sys, argparse, pathlib
+        - Arguments are: samplesheet
+      2. *Process index lengths*
+        - By parsing the samplesheet, we get the lengths of all the sample unique indexes (index column in samplesheet).
+        - We save the names of the samples that contained longer indexes
+        - We remove one nt from the longest indexes. 
+      3. *Rewrite samplesheet*
+        - We rewrite the samplesheet with the new index lengths
+input: 
+  - - sample:
+      - type: string
+        description: Sample name
+    - samplesheet:
+      - type: file
+        description: Path to samplesheet CSV
+output:
+  - normalized:
+      - - sample:
+          - type: string
+            description: Sample name
+        - normalized_samplesheet:
+          - type: file
+            description: Path to the normalized samplesheet CSV
+        - runfolder:
+          - type: path
+            description: Path to the runfolder
+  - modified_samples:
+      - - modified_samples:
+          - type: file
+            description: Optional txt file containing the names of the samples that had their index length modified.
+authors:
+  - "@liberentaizp"

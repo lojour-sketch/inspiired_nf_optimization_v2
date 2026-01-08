@@ -1,0 +1,235 @@
+---
+name: "BCL2FASTQ_local"
+
+description: |
+  Convert Illumina BCL files to FASTQ format with demultiplexing.
+  
+  This module performs base calling and demultiplexing of Illumina sequencing
+  runs using bcl2fastq2. It converts raw BCL (base call) files from the
+  sequencer into sample-specific FASTQ files based on index sequences
+  defined in the sample sheet.
+  
+  **Parameter configuration and posterior processing:**
+  
+  1. **Use-bases-mask**:
+     - Uses custom bases mask for read structure. In INSPIIRED's case, we use I20Y159,I12,Y143
+        This means that R1 reads have an inline barcode of 20bp (sample unique sequence) and a 159bp read. The R2 reads 
+        have a 12 bp barcode (Golay sequence) separated from the 143bp read. 
+          * Read 1: 20bp index (I20) + 159bp data (Y159)
+          * Index 1: 12bp index (I12)
+          * Read 2: 143bp data (Y143)
+  
+  2. **Barcode mismatches**: `2,2`
+      - 2 mismatches allowed in first index
+      - 2 mismatches allowed in second index
+      - This configuration differs from INSPIIRED, and lets us retrieve more reads in the demultiplexing.
+    
+  3. **No lane splitting**: 
+     - We use a single line to sequence
+  
+  4. **File organization**: Restructures output for consistency
+     - Creates sample-specific subdirectories. Final structure is always:
+        results/project/sample/fastq.gz
+
+  5. **Quality reports**: Generates demultiplexing statistics
+     - Reports/: HTML reports with per-sample metrics
+     - Stats/: JSON files with detailed statistics
+     - InterOp/: Binary files for Illumina SAV viewer
+  
+  **Important notes:**
+    - Independently of the sequencing instrument, BCL accepts always forward oriented barcodes. Different instruments require forward or reverse complement i5 indexes (Golay sequences in our case), but BCL2FASTQ handles this automatically.
+
+  **Performance optimization:**
+    - `-r 25`: 25 threads for reading BCL files
+    - `-p 25`: 25 threads for processing
+    - `-w 25`: 25 threads for writing FASTQ files
+    - Total CPU usage: ~75 cores during peak processing
+tools:
+  - "bcl2fastq":
+      description: "Illumina BCL to FASTQ file converter"
+      homepage: "https://support.illumina.com/sequencing/sequencing_software/bcl2fastq-conversion-software.html"
+input:
+  - - sample:
+        type: string
+        description: Sample name
+    - primer:
+        type: string
+        description: |
+          Primer information defined in SampleSheet
+    - ltrbit:
+        type: string
+        description: |
+          LTR bit information defined in SampleSheet
+    - largeLTRFrag:
+        type: string
+        description: |
+          Large LTR fragment flag defined in SampleSheet
+    - project_name:
+        type: string
+        description: |
+          Project name as defined in sample sheet.
+          Used to organize output files into project-specific folders.
+    - mingDNA:
+        type: string
+        description: |
+          Minimum genomic DNA threshold (hyperparameter defined in SampleSheet)
+    - meta:
+        type: map
+        description: |
+          Metadata map containing additional run information. ([id: 'run1'])
+    - samplesheet:
+        type: file
+        description: |
+          Illumina sample sheet in CSV format.
+          
+          **Required columns:**
+          - Sample_ID: Unique identifier for each sample
+          - index: First index sequence (sample unique linker (R1), first part of iSL (linkerSequence), before the UMI (NNN))
+          - index2: Second index sequence (Golay sequence (R2))
+          - common_linker: Common linker for all R1 reads (last part of iSL (linkerSequence), after the UMI (NNN))
+          - primer: Primer sequence (R2)
+          - ltrbit: LTR bit of the viral vector (R2)
+          - largeLTRFrag: Large LTR fragment flag from the viral vector (R2)
+          - Sample_Project: Project name for data organization
+          - mingDNA: Minimum genomic DNA threshold (30 bp in INSPIIRED)
+          - minPctIdent: Minimum percent identity threshold (95 in INSPIIRED)
+          - maxAlignStart: Maximum soft-clipping at 5' end (5 bp in INSPIIRED)
+          - maxFragLength: Maximum insertion fragment length, distance between R1 and R2 (2500 bp in INSPIIRED)
+          - refGenome: Reference genome used for alignment (hg38 in INSPIIRED)
+          - vectorSeq: Viral vector sequence path (null if insertion through transposon)
+
+          **Format notes:**
+          - Must include [Data] section header
+          - It is determined in the command line as argument
+
+        pattern: "*.csv"
+    - run_folder:
+        type: directory
+        description: |
+          Illumina run folder containing BCL files.
+          
+          **Required structure:**
+          ```
+          RunFolder/
+          ├── Data/
+          │   └── Intensities/
+          │       └── BaseCalls/
+          │           ├── L001/
+          │           ├── L002/
+          │           └── ...
+          ├── InterOp/
+          │   ├── QMetricsOut.bin
+          │   └── ...
+          ├── RunInfo.xml
+          └── RunParameters.xml
+          ```
+          
+          **Notes:**
+          - Determined in the command line as argument
+
+output:
+  - fastq:
+      - - meta:
+            type: map
+            description: Metadata map (propagated from input)
+        - sample_fastq:
+            type: file
+            description: |
+              Demultiplexed FASTQ files for each sample.
+              
+              **File naming convention:**
+              `{Sample_Name}_S{Sample_Number}_R{Read}_001.fastq.gz`
+              
+              Example: `HD68_KO_CART_S1_R1_001.fastq.gz`
+              
+              **Directory structure:**
+              ```
+              results/
+              └── {project_name}/
+                  ├── HD68_KO_CART/
+                  │   ├── HD68_KO_CART_S1_R1_001.fastq.gz
+                  │   └── HD68_KO_CART_S1_R2_001.fastq.gz
+                  └── HD70_WT_UTD/
+                      ├── HD70_WT_UTD_S2_R1_001.fastq.gz
+                      └── HD70_WT_UTD_S2_R2_001.fastq.gz
+              ```
+            pattern: "*_R{1,2}_001.fastq.gz"
+  
+  - fastq_idx:
+      - - meta:
+            type: map
+            description: Metadata map (propagated from input)
+        - index_fastq:
+            type: file
+            description: |
+              Index read FASTQ files (optional output).
+              
+              **File naming:**
+              `{Sample_Name}_S{Sample_Number}_I{Index}_001.fastq.gz`
+              
+              Example: `HD68_KO_CART_S1_I1_001.fastq.gz`
+            pattern: "*_I{1,2}_001.fastq.gz"
+  
+  - undetermined:
+      - - meta:
+            type: map
+            description: Metadata map (propagated from input)
+        - undetermined_fastq:
+            type: file
+            description: |
+              Undetermined reads that could not be assigned to samples.
+              
+              **File naming:**
+              `Undetermined_S0_R{1,2}_001.fastq.gz`
+              
+              Contains reads where:
+              - Index sequence doesn't match any sample (after allowing mismatches)
+              - Index quality is too low
+              - Ambiguous assignment (multiple samples match equally)
+            pattern: "Undetermined_S0_R{1,2}_001.fastq.gz"
+  
+  - undetermined_idx:
+      - - meta:
+            type: map
+            description: Metadata map (propagated from input)
+        - undetermined_index:
+            type: file
+            description: |
+              Index sequences for undetermined reads.
+              
+              **File naming:**
+              `Undetermined_S0_I{1,2}_001.fastq.gz`
+            pattern: "Undetermined_S0_I{1,2}_001.fastq.gz"
+  
+  - reports:
+      - - meta:
+            type: map
+            description: Metadata map (propagated from input)
+        - reports_dir:
+            type: directory
+            description: |
+              HTML reports with demultiplexing statistics.
+            pattern: "Reports/"
+  
+  - stats:
+      - - meta:
+            type: map
+            description: Metadata map (propagated from input)
+        - stats_dir:
+            type: directory
+            description: |
+              Detailed statistics in JSON format.
+            pattern: "Stats/"
+  
+  - interop:
+      - - meta:
+            type: map
+            description: Metadata map (propagated from input)
+        - interop_files:
+            type: file
+            description: |
+              Binary InterOp files for Illumina Sequencing Analysis Viewer (SAV).
+            pattern: "InterOp/*.bin"
+
+authors:
+  - "@lrenteria"

@@ -1,4 +1,17 @@
 #!/usr/bin/env Rscript
+
+# ------------------------------------------------------------------
+# Author: Libe Renteria Aizpurua
+# Date: 2026-01-07 
+#
+# This script removes read overreading of large LTR fragments and common linkers from paired-end FASTQ files.
+# The reverse complement of the largeLTRfragment is removed from the R1 reads, and the reverse complement of the common linker is removed from the R2 reads.
+# It uses pwalign to align the reads and calculates the identity percentage.
+# If the reads do not contain the fragments, they are trimmed precautionarily to avoid incomplete fragments at the end.
+#
+# ------------------------------------------------------------------
+
+
 args <- commandArgs(trailingOnly = TRUE)
 
 # Parse arguments
@@ -159,7 +172,7 @@ trimmed_qual1 <- result1$qual
 trimmed_reads2 <- result2$reads
 trimmed_qual2 <- result2$qual
 
-#we only keep reads that are longer thatn 0 in both reads, to keep them paired
+#we only keep reads that are longer that 0 in both reads, to keep them paired
 keep_indices <- (width(trimmed_reads1) > 0) & (width(trimmed_reads2) > 0)
 
 

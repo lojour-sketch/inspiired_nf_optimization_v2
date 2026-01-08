@@ -1,0 +1,124 @@
+---
+name: SITESFINAL_TO_POINTS_local
+
+description: |
+
+      The insertions from allSites files are further collapsed based on their R2 start positions (viral insertion point), specifically, the *start for insertions on the + strand* and the *end for those on the - strand* (as the strand column always displays the read2 strand). 
+      This step collapses/joins insertions that occur at the same genomic point to quantify **how many times a same insertion occurs in different cells** (clonal expansion). 
+
+      This module adds a **new feature** to the existing INSPIIRED pipeline. As the original INSPIIRED pipeline was created for the analysis of the distribution of viral insertions, it is not possible to detect clonal expansion of the insertions.
+      However, because the maximum insertion length is limited to 2500 bp (maxAlignmentLength), highly frequent insertions may be underestimated, as multiple insertions with identical R1 and R2 positions can happen by chance and be collapsed by the previous process. 
+      This means the resulting counts reflect site-specific occurrence, but insertions with a very high frequency should be interpreted as conservative estimates.
+
+      As a indicator of the clonal expansion level, we have the couts column, which is the number of reads supporting the same r2 start, this is, reads that havethe same viral insertion and are grouped in a same row in the output.
+      Also the revmap column allows us to identify the original insertions that form the clonal expansion.
+
+      **Script description:**
+      1. *Load libraries and arguments*
+        - Libraries are: GenomicRanges, ChIPseeker, WriteXLS, rtracklayer, GenomicFeatures, GenomeInfoDb, dplyr, org.Hs.eg.db and clusterProfiler
+        - Arguments are: sample, sitesFinal, reference genome and the genome knownGene file
+        - We load the correct TxDb file and read the sitesFinal file
+
+      2. *Create output for empty files*
+        - If the sitesFinal file only contains one line (which would be the header), we create empty outputs. This is useful for when we have controls that need to display empty outputs.
+
+      3. *Collapse insertions*
+        - We convert the GRanges object inside the sitesfinal RDS into a dataframe to be able to process it easil
+        - Then we collapse the different insertions that have the same R2 start positions
+            - We create a new variable called r2_pos:
+                  - If the insertion is on the + strand, we take the start position
+                  - If the insertion is on the - strand, we take the end position
+            - We group the insertions by the seqnames, strand and r2_pos. This means that we will collapse all reads that:
+                  - Have the same seqnames
+                  - Have the same strand
+                  - If the strand is +: Have the same start position
+                  - If the strand is -: Have the same end position
+        - We create a new column called counts, which is the number of reads supporting the same r2 start
+        - We create a new column called revmap, which saves the original revmap information in sitesFinal, joined by a ;
+
+      4. *Reconvert to GRanges*
+        - We convert the collapsed dataframe back to a GRanges object
+
+      5. *Annotate peaks*
+        - We annotate the peaks using the annotatePeak function from the ChIPseeker package
+        - We set the tssRegion to -3000 and 3000, which is the region around the transcription start site
+        - We set the TxDb to the reference genome and the annotation database to org.Hs.eg.db
+
+      6. *Generate plots*
+        - We generate the coverage plot using the covplot function from the ChIPseeker package
+        - We generate the pie chart of the annotation using the plotAnnoPie function
+        - We generate the bar chart of the annotation using the plotAnnoBar function
+        - We generate the upset plot using the upsetplot function
+        - We generate the venn pie chart using the vennpie function
+        - We generate both the upset plot and the venn pie chart using the upsetplot function with the vennpie parameter set to TRUE
+        - We generate the distribution to TSS plot using the plotDistToTSS function
+
+      7. *Calculate GO and KEGG enrichment*
+        - We calculate GO and KEGG enrichment using the enrichGO and enrichKEGG functions from the clusterProfiler package
+        - We set the keyType to ENTREZID, which is the type of ID used by the gene ontology database
+        - We set the organism to hsa, which is the human species
+        - We set the pvalueCutoff to 0.05, which is the cutoff for the p-value
+
+      8. *Generate Excel and PDF files*
+        - We generate an Excel file with the annotated peaks
+        - We generate a PDF file with the coverage plot, pie chart, bar chart, upset plot, venn pie chart, distribution to TSS plot, GO and KEGG enrichment plots
+tools:
+  - GenomicRanges:
+    - description: GenomicRanges is a package for manipulating genomic intervals.
+    - homepage: https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html
+  - ChIPseeker:
+    - description: ChIPseeker is a package for analyzing ChIP-seq data.
+    - homepage: https://bioconductor.org/packages/release/bioc/html/ChIPseeker.html
+  - WriteXLS:
+    - description: WriteXLS is a package for writing Excel files.
+    - homepage: https://cran.r-project.org/web/packages/WriteXLS/index.html
+  - rtracklayer:
+    - description: rtracklayer is a package for reading and writing genome annotations.
+    - homepage: https://bioconductor.org/packages/release/bioc/html/rtracklayer.html
+  - GenomicFeatures:
+    - description: GenomicFeatures is a package for manipulating genomic features.
+    - homepage: https://bioconductor.org/packages/release/bioc/html/GenomicFeatures.html
+  - GenomeInfoDb:
+    - description: GenomeInfoDb is a package for manipulating genome information.
+    - homepage: https://bioconductor.org/packages/release/bioc/html/GenomeInfoDb.html
+  - dplyr:
+    - description: dplyr is a package for manipulating data frames.
+    - homepage: https://cran.r-project.org/web/packages/dplyr/index.html
+  - org.Hs.eg.db:
+    - description: org.Hs.eg.db is a package for accessing gene annotation data.
+    - homepage: https://bioconductor.org/packages/release/data/annotation/html/org.Hs.eg.db.html
+  - clusterProfiler:
+    - description: clusterProfiler is a package for clustering and annotating genes.
+    - homepage: https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html
+inputs:
+      - - sample:
+          - type: string
+            description: Sample name
+        - allSites:
+          - type: file
+            description: Path to the allSites file
+        - sitesfinal:
+          - type: file
+            description: Path to the sitesfinal file
+        - reference_genome_name:
+          - type: string
+            description: Reference genome name
+        - reference genome:
+          - type: file
+            description: Path to the reference genome file
+        - genome knownGene:
+          - type: file
+            description: Path to the genome knownGene file
+output:
+  - points:
+      - - sample:
+          - type: string
+            description: Sample name
+        - fig_points:
+          - type: file
+            description: Path to the figure file
+        - annotated_points:
+          - type: file
+            description: Path to the annotated file
+authors:
+  - "@liberentaizp"

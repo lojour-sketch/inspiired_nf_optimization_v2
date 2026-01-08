@@ -1,0 +1,30 @@
+name: GENOME_INDEXING
+
+description: |
+      This process indexes the reference genome using bowtie2, to be able to do the alignment a posteriori.
+
+      **Parameter configuration:**
+        - *runMode*: This is the run mode of STAR. This time we use the `--runMode genomeGenerate` option, which creates the indexed genome.
+        - *genomeDir*: directory that will contain the indexed genome.
+        - *genomeFastaFiles*: path to the reference genome fasta file.
+        - *runThreadN*: number of threads to use for indexing.
+tools:
+  - STAR:
+      description: Alignment tool for mapping DNA sequences
+      homepage: https://github.com/alexdobin/STAR
+input:
+  - - genome_name:
+        type: string
+        description: Name of the genome
+    - refGemomeFile:
+        type: file
+        description: Path to the reference genome fasta file
+output:
+  - - genome_name:
+        type: string
+        description: Name of the genome
+    - indexedGenomeDir:
+        type: directory
+        description: Directory that will contain the indexed genome
+authors:
+  - "@liberentaizp"

@@ -13,7 +13,7 @@ params.instrument = '' // this is the sequencing machine used
 
 // Parameter validation
 if (!params.samplesheet) error "Missing --samplesheet parameter, provide path to samplesheet"
-if (!params.runfolderDir) error "Missing --runfolderDir parameter. provide path to BCL data folder or tarball"
+if (!params.runfolderDir) error "Missing --runfolderDir parameter. provide path to BCL data folder or FASTQ data folder. "
 if (!params.projectName) error "Missing --projectName parameter, provide the name of the project to organize the result folders"
 if (!params.BCLorFASTQ) error "Missing --BCLorFASTQ parameter, provide the type of data: BCL or FASTQ"
 if (params.BCLorFASTQ != 'BCL' && params.BCLorFASTQ != 'FASTQ')  error "--BCLorFASTQ parameter must be either BCL or FASTQ"

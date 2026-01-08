@@ -1,6 +1,6 @@
 process GENOME_INDEXING_local {
 
-    publishDir "${params.runfolderDir}/../results/13_genome_index/${genome_name}", mode: 'symlink', overwrite: true
+    publishDir "${params.runfolderDir}/../results/12_genome_index/${genome_name}", mode: 'symlink', overwrite: true
 
     input:
     tuple val(genome_name), path(refGenomeFile)

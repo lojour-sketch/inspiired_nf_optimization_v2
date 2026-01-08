@@ -1,5 +1,16 @@
 #!/usr/bin/env Rscript
 
+# ------------------------------------------------------------------
+# Author: Libe Renteria Aizpurua
+# Date: 2026-01-07 
+#
+# This script groups all insertion sites of allSites that have identical coordinates and strand.
+# It also counts the number of times each group appears in the allSites file.
+# It also creates a list of indexes of the reads where that unique siteid appears.
+# This way we can see the level of clonal expansion of the samples.
+#
+# ------------------------------------------------------------------
+
 
 #load libraries
 library(GenomicRanges)

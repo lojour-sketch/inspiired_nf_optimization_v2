@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+# ------------------------------------------------------------------
+# Author: Libe Renteria Aizpurua
+# Date: 2026-01-07 
+#
+# This script normalizes the lengths of the indices in a samplesheet CSV file by trimming the longer indices to match the shortest length.
+# This is used because the downstream analysis requires all indices to be of the same length.
+#
+# ------------------------------------------------------------------
+
 import csv
 import sys
 import argparse

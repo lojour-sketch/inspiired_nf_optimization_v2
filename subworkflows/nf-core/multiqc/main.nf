@@ -6,11 +6,6 @@ workflow MULTIQC_wfl {
     fastqc_zip
     fastqc_html_trimmed
     fastqc_zip_trimmed
-    multiqc_config
-    extra_multiqc_config
-    multiqc_logo
-    replace_names
-    sample_names
 
     main:
     // We want to join all the fastqc raw/trim html/zip files. they all have this format: [[id:xxxx, single_end=false], [paths/to/files]]
@@ -35,12 +30,7 @@ workflow MULTIQC_wfl {
     ch_multiqc_collected = ch_multiqc_flat.collect()
 
     MULTIQC(
-        ch_multiqc_collected,             //multiqc_files 
-        multiqc_config,             //multiqc_config
-        extra_multiqc_config,       //extra_multiqc_config
-        multiqc_logo,               //multiqc_logo
-        replace_names,              //replace_names
-        sample_names                //sample_names
+        ch_multiqc_collected             //multiqc_files 
     )
     
     emit:

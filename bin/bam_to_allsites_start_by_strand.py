@@ -1,11 +1,20 @@
 #!/usr/bin/env python
 
+# ------------------------------------------------------------------
+# Author: Libe Renteria Aizpurua
+# Date: 2026-01-07 
+#
+# This script takes an indexed and sorted BAM file, and after filtering the reads by quality and custom filters,
+# it generates a TSV file with all potential insertion sites based on read pairs.
+#
+# ------------------------------------------------------------------
+
 #import modules
 import sys
 import pysam
 import csv
 
-#load the imputs
+#load the inputs
 samfile = sys.argv[1]
 allsites = sys.argv[2]
 maxAlignStart = sys.argv[3]
@@ -32,11 +41,11 @@ samFile.close()
 samFile = pysam.AlignmentFile(samfile, "rb")
 
 
-with open(f"{sample}_tmpFile.tsv", "w", newline="") as outfile:
+with open(f"{sample}_individualInsertions_notPaired.tsv", "w", newline="") as outfile:
     writer = csv.writer(outfile, delimiter="\t")
     # write header
     writer.writerow(["readname","chr","from","strand","start", "end", "cigar","qStart","PercIdent","tBaseInsert","flag", "tags"])
-    print("Entering for loop in: ", f"{sample}_tmpFile.tsv")
+    print("Entering for loop in: ", f"{sample}_individualInsertions_notPaired.tsv")
     # check if all reads have >minpercIdent, <qStart and <tBasesInsert, and are properly paired
     for read in samFile.fetch(until_eof=True):
         if read.is_read1:
@@ -79,7 +88,7 @@ with open(f"{sample}_tmpFile.tsv", "w", newline="") as outfile:
 #we already have a tsv files with all the filtered reads. now we have to merge the reads that correspond to the same pair. 
 #as the bam file is sorted by read name, we can iterate through the file and merge the reads with the same name
 
-with open(f"{sample}_tmpFile.tsv", "r", newline="") as infile, open(f"{sample}_allSites.tsv", "w", newline="") as outfile:
+with open(f"{sample}_individualInsertions_notPaired.tsv", "r", newline="") as infile, open(f"{sample}_allSites.tsv", "w", newline="") as outfile:
     reader = csv.DictReader(infile, delimiter="\t")
     writer = csv.writer(outfile, delimiter="\t")
     #write header
@@ -105,7 +114,7 @@ with open(f"{sample}_tmpFile.tsv", "r", newline="") as infile, open(f"{sample}_a
                 #and that their readname is the same (pairs)
                 r1 = [r for r in pair_reads if r["from"] == "R1"][0]
                 r2 = [r for r in pair_reads if r["from"] == "R2"][0]
-                if r1["line_num"] != r2["line_num"] and r1["readname"] == r2["readname"]:
+                if r1["line_num"] != r2["line_num"] and r1["readname"] == r2["readname"] and r1["strand"] != r2["strand"]:
                     chrname = r1["chr"]
                     strand = r2["strand"]
 
@@ -125,8 +134,8 @@ with open(f"{sample}_tmpFile.tsv", "r", newline="") as infile, open(f"{sample}_a
             #reset for next read
             pair_reads = []
             last_readname = readname
-        #this is for the last read. we need a 'next read' to trigger the write, so we do it after the loop
         pair_reads.append(row)
+    #this is for the last read. we need a 'next read' to trigger the write, so we do it after the loop
     if len(pair_reads) == 2:
         r1 = [r for r in pair_reads if r["from"] =="R1"][0]
         r2 = [r for r in pair_reads if r["from"] =="R2"][0]

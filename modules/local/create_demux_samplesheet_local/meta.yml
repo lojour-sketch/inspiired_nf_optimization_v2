@@ -1,0 +1,39 @@
+---
+name: CREATE_demux_samplesheet_local
+
+description: |
+      This module creates a samplesheet for the demultiplexing process when our initial inputs are Undetermined FASTQ files.
+      
+      **Script details:**
+
+      In this process we run a different script depending on the sequencing instrument. This is done because of Illumina's Guidelines for reverse complementing i5 sequences for demultiplexing.
+      MiSeq requires the index2 sequence to be forward oriented, while NextSeq instruments require the index2 sequence to be reverse complemented.
+
+      1. **Forward script:**
+        - Creates a samplesheet with two columns: sample_id and barcode.
+          - The barcode is the concatenation of the index1 sequence and the index2 sequence.
+        - Creates a samplesheet with the index2 sequence in the same orientation as the index1 sequence.
+      
+      2. **Reverse script:**
+        - Creates a samplesheet with two columns: sample_id and barcode.
+          - The barcode is the concatenation of the index2 sequence and the reverse complement of the index1 sequence.
+        - Creates a samplesheet with the index2 sequence reverse complemented.
+tools:
+  - "python":
+      description: "Python interpreter"
+      homepage: "https://www.python.org/"
+input:
+  - - sample:
+        type: string
+        description: Sample name
+    - normalized_samplesheet:
+        type: file
+        description: Normalized samplesheet, where indexes from all samples are the same length.
+    - rundir:
+        type: directory
+        description: Run directory
+output:
+  - demux_sheet:
+      type: file
+      description: Demultiplexing samplesheet, which will be used by fastqk to demultiplex the reads.
+      pattern: "DemuxSampleSheet.tsv"

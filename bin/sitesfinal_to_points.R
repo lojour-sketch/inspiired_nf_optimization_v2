@@ -1,5 +1,14 @@
 #!/usr/bin/env Rscript
 
+# ------------------------------------------------------------------
+# Author: Libe Renteria Aizpurua
+# Date: 2026-01-07 
+#
+# This script annotates insertion sites represented as points using ChIPseeker and generates plots and an Excel file with the annotations.
+#
+# ------------------------------------------------------------------
+
+
 # LOAD REQUIRED LIBRARIES
 library(GenomicRanges)
 library(ChIPseeker)
@@ -78,19 +87,20 @@ if(length(sites.final) == 1){
     quit(save = "no", status = 0)
 }
 
-#como sites.final es un objeto GRanges, primero lo convertimos a data.frame
+#sites.final is a GRanges object, so we convert it to a data.frame first
 df <- as.data.frame(mcols(sites.final))
 df$seqnames <- as.character(seqnames(sites.final))
 df$start <- start(sites.final)
 df$end <- end(sites.final)
 df$strand <- as.character(strand(sites.final))
 
-#ahora colapsamos los distintos rows que tienen la misma insercion del virus
-#para inserciones en el strand + colapsamos os que tienen el mismo start (insercion de r2)
-#para inserciones en el strand - colapsamos os que tienen el mismo end (insercion de r2)
+
+#now we will collapse the rows that have the same insertion in the same strand
+#for insertions on the + strand, we will collapse those that have the same start (insertion of r2)
+#for insertions on the - strand, we will collapse those that have the same end (insertion of r2)
 df_collapsed <- df %>%
   mutate(r2_pos = if_else(strand == "+", start, end)) %>%
-  group_by(seqnames, r2_pos) %>%
+  group_by(seqnames, strand, r2_pos) %>%
   summarise(
     counts = as.integer(n()),
     strand = first(strand),
@@ -102,7 +112,7 @@ df_collapsed <- df %>%
   ) %>%
   ungroup()
 
-# reconstruir GRanges para poder plotear con ChipSeek
+# we will reconstruct a GRanges object to be able to plot with ChipSeek
 sitescollapsed <- GRanges(
   seqnames = df_collapsed$seqnames,
   ranges   = IRanges(start=df_collapsed$start, end=df_collapsed$end),
@@ -113,7 +123,7 @@ sitescollapsed <- GRanges(
   samplename = df_collapsed$samplename
 )
 
-
+#annotation and plotting
 peak <- sitescollapsed
     chromosomes = c(paste0("chr",1:22), "chrX", "chrY")
 
@@ -196,8 +206,8 @@ peak <- sitescollapsed
     dev.off()
 
 
-# Añadir las columnas que faltan desde sites.final
+# Add the missing columns from sites.final
 final_output <- peakAnno.dfr
 
-# Guardar el Excel completo
+#save the complete Excel
 WriteXLS::WriteXLS(final_output, paste0("annotated_points_", sample, '.xlsx'))

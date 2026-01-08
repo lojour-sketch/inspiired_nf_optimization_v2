@@ -1,13 +1,12 @@
 include { NORMALIZE_index_length_local } from '../../../modules/local/normalize_index_length_local/main'
 include { BCL2FASTQ_local } from '../../../modules/local/bcl2fastq_local/main'
 include { UMIEXTRACT_local } from '../../../modules/local/umi_extract_local/main'
-include { FASTQCANDTRIM_wfl } from '../../../subworkflows/nf-core/fastqc_fastq_umitools_trimgalore/main'
+include { FASTQCANDTRIM_wfl } from '../../../subworkflows/nf-core/fastqc_fastq_umitools_trimgalore_edited/main'
 include { MULTIQC_wfl } from '../../../subworkflows/nf-core/multiqc/main'
 include { LTRchecking_seqkit_local } from '../../../modules/local/LTR_primer_checking_local/main'
 include { RCremoval_inspiired_local } from '../../../modules/local/rcremoval_local/main'
 include { FINDVECTOR_local } from '../../../modules/local/find_vector_local/main'
 include { SHORTREMOVE_local } from '../../../modules/local/short_seq_removal_local/main'
-include { DEREPLICATE_local } from '../../../modules/local/dereplicate_local/main'
 
 // MAIN
 
@@ -111,12 +110,7 @@ workflow PREPROCESSING_wfl {
             fastqc_html,                 //rawfastqc html
             fastqc_zip,                 //rawfastqc zip
             fastqc_html_trimmed,                 //trimmedfastqc html
-            fastqc_zip_trimmed,                //trimmedfastqc zip
-            file('testresults/empty.yml'),                          //multiqc_config
-            file('testresults/empty_extra.yml'),                          //extra_multiqc_config
-            file('testresults/empty.png'),                          //multiqc_logo
-            file('testresults/empty_replace.txt'),                          //replace_names
-            file('testresults/empty_samples.txt'),                          //sample_names
+            fastqc_zip_trimmed               //trimmedfastqc zip
         )
 
 

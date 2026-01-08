@@ -1,0 +1,62 @@
+name: DEMUXING_FASTQ_local
+
+description: |
+      Demultiplexes FASTQ files using `fastqk'.
+      The module finds the undetermined reads and demultiplexes them using the samplesheet and the readStructure.
+
+      **Parameter configuration:**
+        - *readStructure*: This is the read structure of the FASTQ files. It is obtained as an argument in the command line. In INSPIIRED's case the read structure would be '20B+T 12B +T', as the R1's barcode is the 20 first bps of the read and the R2 barcodes are in the index files. 
+        - *sample-metadata*: We add the samplesheet file here, to be able to assign each barcode to each sample's reads
+      
+      **File organization:**
+        - The demultiplexed FASTQ files will be added to the sample's folder in the results/1_demuxed_undetermined folder.
+tools:
+    - fastqk:
+        description: |
+            Demultiplexes FASTQ files using `fastqk'.
+        homepage: https://github.com/fulcrumgenomics/fqtk
+input:
+    - - FASTQfolderDir:
+          type: path
+          description: Path to the folder containing the Undetermuned FASTQ files
+      - samplesheet:
+          type: path
+          description: |
+                Illumina sample sheet in CSV format.
+          
+                **Required columns:**
+                - Sample_ID: Unique identifier for each sample
+                - index: First index sequence (sample unique linker (R1), first part of iSL (linkerSequence), before the UMI (NNN))
+                - index2: Second index sequence (Golay sequence (R2))
+                - common_linker: Common linker for all R1 reads (last part of iSL (linkerSequence), after the UMI (NNN))
+                - primer: Primer sequence (R2)
+                - ltrbit: LTR bit of the viral vector (R2)
+                - largeLTRFrag: Large LTR fragment flag from the viral vector (R2)
+                - Sample_Project: Project name for data organization
+                - mingDNA: Minimum genomic DNA threshold (30 bp in INSPIIRED)
+                - minPctIdent: Minimum percent identity threshold (95 in INSPIIRED)
+                - maxAlignStart: Maximum soft-clipping at 5' end (5 bp in INSPIIRED)
+                - maxFragLength: Maximum insertion fragment length, distance between R1 and R2 (2500 bp in INSPIIRED)
+                - refGenome: Reference genome used for alignment (hg38 in INSPIIRED)
+                - vectorSeq: Viral vector sequence path (null if insertion through transposon)
+
+                **Format notes:**
+                - Must include [Data] section header
+                - It is determined in the command line as argument
+          pattern: "*.csv"
+      - readStructure:
+          type: string
+          description: |
+              Read structure of the FASTQ files. It is obtained as an argument in the command line. In INSPIIRED's case the read structure would be '20B+T 12B +T', as the R1's barcode is the 20 first bps of the read and the R2 barcodes are in the index files.
+output:
+  - fastq:
+      - - read1:
+              type: file
+              description: Demultiplexed FASTQ files for R1 reads
+              pattern: "*.R1.fq.gz"
+        - read2:
+              type: file
+              description: Demultiplexed FASTQ files for R2 reads
+              pattern: "*.R2.fq.gz"
+authors:
+    - "@lrenteria"      

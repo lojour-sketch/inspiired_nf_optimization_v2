@@ -20,11 +20,15 @@ process SHORTREMOVE_local{
     echo "Number of reads in filtered files:"
     seqkit stats ${sample}.short_removed_R1.fastq ${sample}.short_removed_R2.fastq
 
-    # Check if files are empty
+    # Check if files became empty after filtering
     if [[ ! -s "${sample}.short_removed_R1.fastq" ]] || [[ ! -s "${sample}.short_removed_R2.fastq" ]]; then
-        echo "ERROR: One or both filtered files are empty"
-        echo "This suggests the mingDNA value (${mingDNA}) might be too high"
-        exit 1
+        echo "WARNING: One or both files are empty after filtering (mingDNA=${mingDNA})"
+        echo "Creating empty paired output files..."
+        touch ${sample}.short_removed_R1.paired.fastq
+        touch ${sample}.short_removed_R2.paired.fastq
+        gzip ${sample}.short_removed_R1.paired.fastq
+        gzip ${sample}.short_removed_R2.paired.fastq
+        exit 0
     fi
     
     # Try to pair with verbose output

@@ -1,4 +1,15 @@
 #!/usr/bin/env Rscript
+
+# ------------------------------------------------------------------
+# Author: Libe Renteria Aizpurua
+# Date: 2026-01-07 
+#
+# This script removes reads containing vector sequences from paired-end FASTQ files. The reads will be removed only if they have vector in both pairs.
+# It uses minimap2 to align the reads and calculates the identity percentage.
+#
+# ------------------------------------------------------------------
+
+
 args <- commandArgs(trailingOnly = TRUE)
 
 # Parse arguments
@@ -67,7 +78,7 @@ if (nrow(hits.v.2) > 0) {
     hits.v.2$baseName <- get_base_name(hits.v.2$qName)
 }
 
-## now we merge the dataframes to get the reads that have vector in both pairs. we will only remove these    
+## now we merge the dataframes to get the reads that have vector in both pairs. we will only remove these, as in INSPIIRED    
 hits.v <- try({
     if (nrow(hits.v.1) > 0 && nrow(hits.v.2) > 0) {
         merge(hits.v.1[, c("baseName", "tStart")],
