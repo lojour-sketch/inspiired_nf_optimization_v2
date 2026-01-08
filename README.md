@@ -1,6 +1,6 @@
 # INSPIIRED optimization with NextFlow
 
-This Nextflow pipeline is based in [INSPIIRED] (https://github.com/BushmanLab/INSPIIRED?tab=readme-ov-file) software's [intSiteCaller] (https://github.com/BushmanLab/intSiteCaller) module. It follows the same general workflow as the original pipeline, with several enhancements:
+This Nextflow pipeline is based in [INSPIIRED](https://github.com/BushmanLab/INSPIIRED?tab=readme-ov-file) software's [intSiteCaller](https://github.com/BushmanLab/intSiteCaller) module. It follows the same general workflow as the original pipeline, with several enhancements:
 * Accepts BCL or FASTQ inputs
 * Faster alignment and overall execution time
 * Support for multiple samples
