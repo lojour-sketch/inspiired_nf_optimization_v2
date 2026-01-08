@@ -1,4 +1,14 @@
 #!/usr/bin/env python3
+
+# ------------------------------------------------------------------
+# Author: Libe Renteria Aizpurua
+# Date: 2026-01-07 
+#
+# This script analyzes the Nextflow trace file and prints some time statistics.
+#
+# ------------------------------------------------------------------
+
+
 import sys
 import csv
 import re

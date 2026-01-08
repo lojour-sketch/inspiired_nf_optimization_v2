@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+# ------------------------------------------------------------------
+# Author: Libe Renteria Aizpurua
+# Date: 2026-01-07 
+#
+# This script creates a demultiplexing samplesheet for the fqtk demultiplexing tool.
+# It takes the reverse complement of the second index to create the full barcode, because the selected sequencing instrument requires it.
+#
+# ------------------------------------------------------------------
+
 import csv
 import argparse
 

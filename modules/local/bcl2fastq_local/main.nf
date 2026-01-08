@@ -19,7 +19,6 @@ process BCL2FASTQ_local {
     shell: 
     '''
 
-    # changed some parameters that differ from Patxi's script
     bcl2fastq \\
         --runfolder-dir !{run_dir} \\
         --output-dir results \\

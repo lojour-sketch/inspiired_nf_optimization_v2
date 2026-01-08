@@ -1,5 +1,14 @@
 #!/usr/bin/env python
 
+# ------------------------------------------------------------------
+# Author: Libe Renteria Aizpurua
+# Date: 2026-01-07 
+#
+# This script takes an indexed and sorted BAM file, and after filtering the reads by quality and custom filters,
+# it generates a TSV file with all potential insertion sites based on read pairs.
+#
+# ------------------------------------------------------------------
+
 #import modules
 import sys
 import pysam

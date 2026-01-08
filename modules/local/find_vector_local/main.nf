@@ -18,7 +18,7 @@ process FINDVECTOR_local {
 
     else
         """
-        # Si when: es false, simplemente copia los archivos originales
+        # If when: is false, just copy the input reads to the output
         cp ${read1} ${sample}.R1_skipped_vector.fastq.gz
         cp ${read2} ${sample}.R2_skipped_vector.fastq.gz
 

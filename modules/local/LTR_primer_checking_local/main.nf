@@ -35,8 +35,5 @@ process LTRchecking_seqkit_local {
     #remove temporal files
     rm temp_R2_kept_${meta}.fastq.gz keep_ids_${meta}.txt ids_R1_${meta}.txt
 
-    # MANUAL COPY FOR DEBUGGING
-    # cp "${meta}.ltr_filtered_R1.fastq.gz" /home/lrenteria/inspiired_nf/results/8_LTR_presence/
-    # cp "${meta}.ltr_filtered_R2.fastq.gz" /home/lrenteria/inspiired_nf/results/8_LTR_presence/
     """
 }

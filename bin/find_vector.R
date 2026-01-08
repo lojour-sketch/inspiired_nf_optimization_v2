@@ -1,4 +1,15 @@
 #!/usr/bin/env Rscript
+
+# ------------------------------------------------------------------
+# Author: Libe Renteria Aizpurua
+# Date: 2026-01-07 
+#
+# This script removes reads containing vector sequences from paired-end FASTQ files. The reads will be removed only if they have vector in both pairs.
+# It uses minimap2 to align the reads and calculates the identity percentage.
+#
+# ------------------------------------------------------------------
+
+
 args <- commandArgs(trailingOnly = TRUE)
 
 # Parse arguments
