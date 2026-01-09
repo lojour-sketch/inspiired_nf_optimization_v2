@@ -96,9 +96,9 @@ workflow {
             .splitCsv(header: true)
             .map { row -> 
                 def refGenomeMap = [
-                    "hg19": "${params.runfolderDir}/../hg19_GRCh37_UCSC_initialrelease_2009.fa",
-                    "hg38": "${params.runfolderDir}/../hg38_GRCh38_UCSC_initialrelease_2013.fa",
-                    "hg18": "${params.runfolderDir}/../hg18_UCSC_2020_01_23_0222.fa"
+                    "hg19": "${params.runfolderDir}/../hg19*.fa",
+                    "hg38": "${params.runfolderDir}/../hg38*.fa",
+                    "hg18": "${params.runfolderDir}/../hg18*.fa"
                 ]
                 def refKnowngeneMap = [
                     "hg19": "TxDb.Hsapiens.UCSC.hg19.knownGene",
