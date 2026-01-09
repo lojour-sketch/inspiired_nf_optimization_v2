@@ -9,7 +9,7 @@ This Nextflow pipeline is based in [INSPIIRED](https://github.com/BushmanLab/INS
 
 ## Workflow diagram
 
-![Workflow_diagram](Workflow_image)
+![Workflow_diagram](Workflow_diagram.png)
 
 
 ## Pre-requirements
