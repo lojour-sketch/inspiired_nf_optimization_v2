@@ -38,7 +38,8 @@ In order to run this pipeline, some prerequisites must be met:
   * `--FASTQfolderDir`parameter must be provided, which will be the path to the folder with Undetermined FASTQ files
   * `--readStructure`parameter must be provided, which will be the structure of template and barcode sequences. If a read has 34 nucleotides and the barcodes are of 12 nucleotides separately, the read structure is 34T 12B. However, if the barcodes are inside the read the read structure would be 12B34T. In our case, we will mostly have the following read structure: `20B+T 12B +T`
 * The container images that are described in the .def files must be created and available.
-* The fasta file of the vector's genomic sequence must be available.
+* The fasta file of the vector's genomic sequence must be available in the same directory as the pipeline.
+* The fasta file of the reference genome must be available in the same directory as the pipeline, and its name must strt with the name of the genome (hg19, hg38...) and finish with the `.fa`extension. 
 
 ## Running the pipeline
 
