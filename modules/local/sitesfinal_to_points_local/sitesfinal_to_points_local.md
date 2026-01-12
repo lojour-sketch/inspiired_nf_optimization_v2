@@ -2,11 +2,11 @@
 
 ### Description
 
-The insertions from allSites files are further collapsed based on their R2 start positions (viral insertion point), specifically, the *start for insertions on the + strand* and the *end for those on the - strand* (as the strand column always displays the read2 strand).  
-This step collapses/joins insertions that occur at the same genomic point to quantify **how many times a same insertion occurs in different cells** (clonal expansion).  
+The insertions from sitesFinal files are further collapsed based on their R2 start positions (viral insertion point). Specifically, the *start column for insertions on the + strand* and the *end column for those on the - strand*. The strand column always displays the R2 strand, so we do this to always get the starting position of the R2 read.
+This step collapses/joins insertions that occur at the same genomic point to quantify **how many times a same insertion occurs in different cells** (clonal expansion). We know they belong to different cells because we already discarded the insertions with identical R1 and R2 starting positions. 
 
 This module adds a **new feature** to the existing INSPIIRED pipeline. As the original INSPIIRED pipeline was created for the analysis of the distribution of viral insertions, it is not possible to detect clonal expansion of the insertions.  
-However, because the maximum insertion length is limited to 2500 bp (maxAlignmentLength), highly frequent insertions may be underestimated, as multiple insertions with identical R1 and R2 positions can happen by chance and be collapsed by the previous process.  
+However, because the maximum insertion length is limited to 2500 bp (maxAlignmentLength), highly frequent insertions may be underestimated, as multiple insertions with identical R1 and R2 positions can happen by chance (and not duplication) and be collapsed by the previous process.  
 This means the resulting counts reflect site-specific occurrence, but insertions with a very high frequency should be interpreted as conservative estimates.
 
 As an indicator of the clonal expansion level, we have the **counts** column, which is the number of reads supporting the same R2 start.  
