@@ -1,6 +1,7 @@
 include { NORMALIZE_index_length_local } from '../../../modules/local/normalize_index_length_local/main'
 include { CREATE_demux_samplesheet_local } from '../../../modules/local/create_demux_samplesheet_local/main'
 include { DEMUXING_FASTQ_local } from '../../../modules/local/demuxing_fastq_local/main'
+include { UNKNOWN_BARCODE_QC_local } from '../../../modules/local/unknown_barcode_qc_local/main'
 include { UMIEXTRACT_local } from '../../../modules/local/umi_extract_local/main'
 include { FASTQCANDTRIM_wfl } from '../../../subworkflows/nf-core/fastqc_fastq_umitools_trimgalore_edited/main'
 include { MULTIQC_wfl } from '../../../subworkflows/nf-core/multiqc/main'
@@ -50,6 +51,28 @@ workflow PREPROCESSING_wfl {
 
         DEMUXING_FASTQ_local(ch_demux_input)
         DEMUXING_FASTQ_local.out.fastq.set { ch_demux_fastq }
+
+        ch_demux_fastq
+            .flatten()
+            .filter { file -> !file.getFileName().toString().startsWith('unmatched.') }
+            .collect()
+            .set { ch_assigned_fastqs_for_qc }
+
+        Channel
+            .fromPath("${params.FASTQfolderDir}/Undetermined_*_R*.fastq.gz")
+            .collect()
+            .set { ch_unknown_fastqs_for_qc }
+
+        ch_bcl_input_normalized
+            .map { sid, normalized_samplesheet, runfolder -> normalized_samplesheet }
+            .take(1)
+            .set { ch_normalized_samplesheet_for_qc }
+
+        UNKNOWN_BARCODE_QC_local(
+            ch_assigned_fastqs_for_qc,
+            ch_unknown_fastqs_for_qc,
+            ch_normalized_samplesheet_for_qc
+        )
 
     ///////////////////////// Extracting UMI from reads and adding it to headers /////////////////////////
         //crete necessary input channel for umi_extract_local

@@ -57,23 +57,25 @@ For the samples that have a longer sample sequence, we will remove the extra nuc
 # CREATE_demux_samplesheet_local
 
 **Description:**  
-Creates a samplesheet for demultiplexing when initial inputs are Undetermined FASTQ files.
+Creates a samplesheet for demultiplexing when the workflow starts from undetermined FASTQ files.
 
 ---
 
 ## Script Details
 
-The module runs different scripts depending on the sequencing instrument, following Illumina guidelines for reverse complementing i5 sequences:  
+This module is only used on the FASTQ input path. It runs different scripts depending on `--instrument`, following Illumina guidelines for index orientation during FASTQ-based demultiplexing:
 
-- **MiSeq:** index2 sequence must be forward-oriented  
-- **NextSeq:** index2 sequence must be reverse complemented
+- **MiSeq:** barcode = `index + index2`
+- **NextSeq2000 / NextSeq500:** barcode = `index + revcomp(index2)`
+
+The BCL path does not use this module because `bcl2fastq` handles index orientation internally.
 
 <details>
 <summary>1. Forward script</summary>
 
 - Creates a samplesheet with columns: `sample_id` and `barcode`  
-  - `barcode` = concatenation of index1 + index2  
-- Index2 sequence is in the same orientation as index1
+   - `barcode` = concatenation of `index` + `index2`
+- `index2` is kept in the forward orientation
 
 </details>
 
@@ -81,8 +83,8 @@ The module runs different scripts depending on the sequencing instrument, follow
 <summary>2. Reverse script</summary>
 
 - Creates a samplesheet with columns: `sample_id` and `barcode`  
-  - `barcode` = concatenation of index2 + reverse complement of index1  
-- Index2 sequence is reverse complemented
+   - `barcode` = concatenation of `index` + reverse complement of `index2`
+- `index2` is reverse complemented before demultiplexing
 
 </details>
 
@@ -114,71 +116,7 @@ The module runs different scripts depending on the sequencing instrument, follow
 
 | Name | Type | Description | Pattern |
 |------|------|-------------|---------|
-| `demux_sheet` | file | Demultiplexing samplesheet used by `fastqk` to demultiplex reads | `DemuxSampleSheet.tsv` |
-
----
-
-# CREATE_demux_samplesheet_local
-
-**Description:**  
-Creates a samplesheet for demultiplexing when initial inputs are Undetermined FASTQ files.
-
----
-
-## Script Details
-
-The module runs different scripts depending on the sequencing instrument, following Illumina guidelines for reverse complementing i5 sequences:  
-
-- **MiSeq:** index2 sequence must be forward-oriented  
-- **NextSeq:** index2 sequence must be reverse complemented
-
-<details>
-<summary>1. Forward script</summary>
-
-- Creates a samplesheet with columns: `sample_id` and `barcode`  
-  - `barcode` = concatenation of index1 + index2  
-- Index2 sequence is in the same orientation as index1
-
-</details>
-
-<details>
-<summary>2. Reverse script</summary>
-
-- Creates a samplesheet with columns: `sample_id` and `barcode`  
-  - `barcode` = concatenation of index2 + reverse complement of index1  
-- Index2 sequence is reverse complemented
-
-</details>
-
----
-
-## Tools
-
-<details>
-<summary>python</summary>
-
-**Description:** Python interpreter  
-**Homepage:** [https://www.python.org/](https://www.python.org/)
-
-</details>
-
----
-
-## Input
-
-| Name | Type | Description | Pattern |
-|------|------|-------------|---------|
-| `sample` | string | Sample name | — |
-| `normalized_samplesheet` | file | Normalized samplesheet with indexes of same length across all samples | — |
-| `rundir` | directory | Run directory | — |
-
----
-
-## Output
-
-| Name | Type | Description | Pattern |
-|------|------|-------------|---------|
-| `demux_sheet` | file | Demultiplexing samplesheet used by `fastqk` to demultiplex reads | `DemuxSampleSheet.tsv` |
+| `demux_sheet` | file | Demultiplexing samplesheet used by `fqtk` to demultiplex reads | `DemuxSampleSheet.tsv` |
 
 ---
 
@@ -222,6 +160,7 @@ Performs base calling and demultiplexing of Illumina sequencing runs using `bcl2
 
 **Important notes:**
 - Independently of the sequencing instrument, BCL accepts always forward oriented barcodes. Different instruments require forward or reverse complement i5 indexes (Golay sequences in our case), but BCL2FASTQ handles this automatically.
+- In `pipeline_fixed`, the downstream preprocessing workflow consumes `out.fastq` as a direct `(meta, [files])` tuple instead of collecting it first. The auxiliary outputs (`fastq_idx`, `undetermined`, `reports`, `stats`, `interop`) remain collected because they are only published or reused as grouped side outputs.
 
 <details>
 <summary>Performance optimization</summary>
@@ -275,6 +214,73 @@ Performs base calling and demultiplexing of Illumina sequencing runs using `bcl2
 | `reports_dir` | directory | HTML demultiplexing reports | `Reports/` |
 | `stats_dir` | directory | JSON detailed statistics | `Stats/` |
 | `interop_files` | file | Binary InterOp files for Illumina SAV viewer | `InterOp/*.bin` |
+
+---
+
+## UNKNOWN_BARCODE_QC_local
+
+### Description
+
+This module summarizes demultiplexing quality for both BCL and FASTQ runs by comparing assigned sample FASTQs against the corresponding unknown or undetermined FASTQs from the demultiplexing step. On the FASTQ path, the assigned FASTQ list excludes the `unmatched.*` outputs emitted by `fqtk demux`. It is designed to answer whether unknown reads resemble expected sample-sheet barcodes or instead look like random background noise.
+
+The module publishes four report files under `00_demux_unknown_qc/${params.projectName}`.
+
+### Script Details
+
+1. *Stage the input FASTQs locally*
+   - Assigned FASTQs and unknown FASTQs are symlinked into task-local folders using resolved real paths.
+
+2. *Identify the unknown R1 file*
+   - The module locates the undetermined R1 FASTQ and counts barcode observations from its read headers.
+
+3. *Count assigned reads*
+   - Only assigned R1 FASTQs are used to estimate the fraction of reads that were demultiplexed successfully.
+   - On the FASTQ path, `unmatched.*` files are excluded from this assigned-read count.
+
+4. *Compare unknown barcodes against the samplesheet*
+   - Exact matches: barcode appears in the normalized samplesheet
+   - Near matches: barcode is within one mismatch of known `index` and `index2`
+   - Random matches: barcode does not resemble the expected barcode set
+
+5. *Compute heuristic QC signals*
+   - Low-diversity fraction
+   - G-homopolymer signal
+   - Top-barcode concentration
+   - Rule-based indicators for possible sample-sheet mismatch versus background or PhiX-like noise
+
+6. *Write machine-readable and human-readable outputs*
+   - `metrics.tsv` and `metrics.json`
+   - `top_unknowns.tsv`
+   - `indicators.txt`
+
+---
+
+### Tools
+
+| Tool | Description | Homepage |
+|------|-------------|---------|
+| Python | Python interpreter used to run the QC script | [link](https://www.python.org/) |
+
+---
+
+### Input
+
+| Name | Type | Description | Pattern |
+|------|------|-------------|---------|
+| `assigned_fastqs` | file list | Demultiplexed sample FASTQs from either demultiplexing branch. On the FASTQ path this list excludes `unmatched.*` outputs. | `*R{1,2}*.f*q.gz` |
+| `unknown_fastqs` | file list | Unknown or undetermined FASTQs from the active demultiplexing branch (`Undetermined_S0_*` on BCL, `Undetermined_*` on FASTQ input) | `Undetermined_*_R{1,2}*.fastq.gz` |
+| `samplesheet` | file | Normalized samplesheet used for the run | `*.csv` |
+
+---
+
+### Output
+
+| Name | Type | Description | Pattern |
+|------|------|-------------|---------|
+| `metrics` | file | Tabular summary of assigned and unknown read fractions | `demux_unknown_barcode_qc.metrics.tsv` |
+| `top_unknowns` | file | Top unknown barcode sequences ranked by abundance | `demux_unknown_barcode_qc.top_unknowns.tsv` |
+| `indicators` | file | Human-readable interpretation of the QC heuristics | `demux_unknown_barcode_qc.indicators.txt` |
+| `metrics_json` | file | JSON version of the summary metrics and top unknown barcodes | `demux_unknown_barcode_qc.metrics.json` |
 
 ---
 
@@ -1046,10 +1052,12 @@ Also, the **revmap** column allows us to identify the original insertions that f
    - Key type: ENTREZID  
    - Organism: hsa  
    - p-value cutoff: 0.05
+   - In `pipeline_fixed`, `clusterProfiler` cache paths are redirected to a writable task-local directory before KEGG enrichment is attempted.
+   - If KEGG enrichment fails, the module logs the error and continues producing the remaining annotation outputs.
 
 8. *Generate Excel and PDF files*  
    - Excel: annotated peaks  
-   - PDF: all plots (coverage, pie, bar, upset, venn pie, TSS distribution, GO and KEGG enrichment)
+   - PDF: all plots (coverage, pie, bar, upset, venn pie, TSS distribution, GO and KEGG enrichment when available)
 
 ---
 

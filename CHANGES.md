@@ -1,102 +1,43 @@
-# pipeline_fixed — Changes vs pipeline
+# pipeline_fixed — General changes vs pipeline
 
-## Date
-2026-04-30
+`pipeline_fixed` keeps the same overall INSPIIRED-derived workflow as `pipeline`, but introduces a small set of targeted changes to make the preprocessing entry points more robust and to expose additional QC information.
 
-## Background
-The original pipeline (`pipeline/`) failed during a Run_606 execution. `PREPROCESSING_wfl:BCL2FASTQ_local` completed successfully (SLURM exit 0), but Nextflow immediately aborted with:
+## 1. Preprocessing channel fix for BCL demultiplexing
 
-```
-groovy.lang.MissingMethodException: No signature of method:
-Script_d53e1443259175e7$..._closure17.call() is applicable for
-argument types: (LinkedList) values: [[D131_d0_BCMA_BFP, ...R1_001.fastq.gz, ...]]
-```
+The BCL preprocessing workflow now preserves the shape of the `BCL2FASTQ_local.out.fastq` output when passing reads to the UMI extraction setup.
 
-The crash happened in `subworkflows/local/preprocessing/main_bcl.nf`
-(`Script_d53e1443259175e7` in the log), inside the `.map` operator that
-feeds the UMI-extraction step.
+- `ch_demux_fastq` is kept as the direct `(meta, [files])` tuple emitted by `BCL2FASTQ_local`
+- Per-sample reads are regrouped explicitly before UMI extraction
+- The auxiliary BCL outputs (`fastq_idx`, `undetermined`, `reports`, `stats`, `interop`) remain collected because they are only published or reused as grouped side outputs
 
----
+This change prevents tuple-shape errors during downstream preprocessing while preserving the existing published outputs.
 
-## Root cause
+## 2. Unknown barcode QC after demultiplexing on both input paths
 
-In `main_bcl.nf`, after `BCL2FASTQ_local` finishes, its `.fastq` output
-was collected with `.collect()`:
+`pipeline_fixed` adds a dedicated `UNKNOWN_BARCODE_QC_local` step immediately after demultiplexing on both preprocessing branches: after `BCL2FASTQ_local` on the BCL path and after `DEMUXING_FASTQ_local` on the FASTQ path.
 
-```groovy
-// ORIGINAL (broken)
-BCL2FASTQ_local.out.fastq.collect().set { ch_demux_fastq }
-```
+On the FASTQ path, the QC step uses assigned FASTQs after excluding `unmatched.*` outputs and uses the original `Undetermined_*_R*.fastq.gz` files from `--FASTQfolderDir` as the unknown-read input.
 
-`BCL2FASTQ_local` is always run exactly once because its input is guarded
-by `.take(1)`. This means `out.fastq` emits a **single** `(meta, [files])`
-tuple — a 2-element structure.
+This step:
+- estimates the fraction of reads assigned to samples versus undetermined reads
+- reports the top unknown barcode sequences found in the undetermined R1 FASTQ
+- classifies unknown barcodes as exact, near, or random relative to the normalized samplesheet
+- summarizes low-diversity and G-homopolymer signals
+- produces rule-based indicators to help distinguish barcode mismatch issues from random background or PhiX-like noise
 
-`.collect()` gathers all items emitted by a channel into a single list.
-Applied to a channel that emits one tuple, it wraps that tuple in another
-list, producing a `LinkedList` like:
+The reports are published under `00_demux_unknown_qc/${params.projectName}`.
 
-```
-[[meta, [R1.fastq.gz, R2.fastq.gz]]]
-```
+## 3. More robust annotation inside containers
 
-The very next line tried to unpack it as a 2-element tuple:
+`SITESFINAL_TO_POINTS_local` now handles `clusterProfiler` more safely in containerized environments.
 
-```groovy
-// This map expects (meta, files) — a 2-element tuple
-.combine(ch_demux_fastq.map { meta, files -> files })
-```
+- Cache-related environment variables are redirected to a writable task-local directory before KEGG enrichment runs
+- KEGG enrichment is wrapped so that a failure in `enrichKEGG` no longer aborts the whole annotation process
+- The remaining annotation outputs, plots, and tables are still produced even if KEGG enrichment is unavailable
 
-Groovy cannot call that closure with a single `LinkedList` argument, so
-the workflow crashed before any downstream processes could be submitted.
+## Summary
 
----
-
-## Fix applied
-
-**File:** `subworkflows/local/preprocessing/main_bcl.nf`
-
-Removed `.collect()` from the `ch_demux_fastq` assignment only. The other
-outputs (`fastq_idx`, `undetermined`, `reports`, `stats`, `interop`) keep
-`.collect()` because they are only stored/published and are never
-destructured with a `map`.
-
-```groovy
-// FIXED
-BCL2FASTQ_local.out.fastq                    .set { ch_demux_fastq }  // <-- .collect() removed
-BCL2FASTQ_local.out.fastq_idx       .collect().set { ch_fastq_idx }
-BCL2FASTQ_local.out.undetermined    .collect().set { ch_undetermined }
-BCL2FASTQ_local.out.undetermined_idx.collect().set { ch_undetermined_idx }
-BCL2FASTQ_local.out.reports         .collect().set { ch_bcl_reports }
-BCL2FASTQ_local.out.stats           .collect().set { ch_bcl_stats }
-BCL2FASTQ_local.out.interop         .collect().set { ch_bcl_interop }
-```
-
-With the fix, `ch_demux_fastq` holds the raw `(meta, [files])` tuple that
-`BCL2FASTQ_local` emits, and the downstream `.map { meta, files -> files }`
-destructures it correctly.
-
----
-
-## How to run
-
-Use `pipeline_fixed/main.nf` in place of `pipeline/main.nf`.
-The run command (from `Run_606/nextflow_run606.sh`) becomes:
-
-```bash
-~/nextflow run /home/lojour/Bioinfo_projects/INSPIRED_chunhui/pipeline_fixed/main.nf \
-  --BCLorFASTQ BCL \
-  --genome hg38 \
-  --samplesheet /home/lojour/Bioinfo_projects/INSPIRED_chunhui/Run_606/SampleSheet_run606.csv \
-  --runfolderDir /home/lojour/Bioinfo_projects/INSPIRED_chunhui/Run_606/runfolder_606 \
-  --outdir /home/lojour/Bioinfo_projects/INSPIRED_chunhui/Run_606/results_original \
-  --projectName run606_Original \
-  --readStructure '20B+T 12B +T' \
-  --instrument "NextSeq2000" \
-  -work-dir /home/lojour/Bioinfo_projects/INSPIRED_chunhui/Run_606/work_original \
-  -resume
-```
-
-The `-resume` flag is safe to use: `NORMALIZE_index_length_local` and
-`BCL2FASTQ_local` both completed successfully in the failed run and will
-be pulled from the Nextflow cache.
+In short, `pipeline_fixed` differs from `pipeline` in three ways:
+- safer BCL preprocessing channel wiring
+- added demultiplexing unknown-barcode QC on both input paths
+- more resilient annotation behavior in read-only container environments

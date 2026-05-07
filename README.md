@@ -1,24 +1,26 @@
-# INSPIIRED optimization with NextFlow
+# INSPIIRED optimization with Nextflow
 
-This Nextflow pipeline is based in [INSPIIRED](https://github.com/BushmanLab/INSPIIRED?tab=readme-ov-file) software's [intSiteCaller](https://github.com/BushmanLab/intSiteCaller) module. It follows the same general workflow as the original pipeline, with several enhancements:
-* Accepts BCL or FASTQ inputs
-* Faster alignment and overall execution time
-* Support for multiple samples
-* An alternative insertion site detection strategy that counts each exact insertion once and enables identification of clonal expansions
+This repository contains `pipeline_fixed`, a minimal Nextflow variant based on [liberentaizp/inspiired_nf_optimization](https://github.com/liberentaizp/inspiired_nf_optimization), which itself builds on [INSPIIRED](https://github.com/BushmanLab/INSPIIRED?tab=readme-ov-file) software's [intSiteCaller](https://github.com/BushmanLab/intSiteCaller) module.
 
-
-## Workflow diagram
-
-![Workflow_diagram](Workflow_diagram.png)
+Compared with the original Nextflow pipeline by liberentaizp, `pipeline_fixed` keeps the same overall workflow while adding some small fixes:
+* Support for both BCL run-folder inputs and FASTQ-folder inputs
+* A demultiplexing unknown-barcode QC report for both BCL and FASTQ runs
+* More robust annotation in containers by using a writable local cache for `clusterProfiler` and continuing if KEGG enrichment is unavailable
 
 
-## Pre-requirements
+## Prerequisites
 
 In order to run this pipeline, some prerequisites must be met:
-* `--samplesheet` parameter must be provided, which will be the path to the samplesheet. The samplesheet must contain the following columns:
+* The following top-level parameters are always required:
+  * `--BCLorFASTQ`
+  * `--samplesheet`
+  * `--runfolderDir`
+  * `--projectName`
+  * `--outdir`
+* `--samplesheet` must point to a sample sheet that contains the following columns:
   * `Sample_ID`: Sample ID
   * `index`: Index sequence (sample unique linker)
-  * `ìndex2`: Second index sequence (Golay Sequence)
+  * `index2`: Second index sequence (Golay Sequence)
   * `common_linker`: Common linker sequence
   * `primer`: Primer sequence
   * `ltrbit`: LTR bit sequence
@@ -30,16 +32,21 @@ In order to run this pipeline, some prerequisites must be met:
   * `maxFragLength`: Maximum fragment length
   * `refGenome`: Reference genome name
   * `vectorSeq`: Vector sequence path
-+ `--instrument` parameter must be provided, which will be the sequencing machine used.
+  
+An example sample sheet is present in this repository as `Example_SampleSheet.csv`.
+
 * If the input is a BCL Run Folder:
-  * `--runfolderDir` parameter must be provided, which will be the path to the BCL Run Folder. This folder must be in the same directory as the pipeline.
-* If the input is a FASTQ file:
-  * `--runfolderDir` parameter must be provided, which will be any folder in the same directory as the pipeline. It will be used as a reference path
-  * `--FASTQfolderDir`parameter must be provided, which will be the path to the folder with Undetermined FASTQ files
-  * `--readStructure`parameter must be provided, which will be the structure of template and barcode sequences. If a read has 34 nucleotides and the barcodes are of 12 nucleotides separately, the read structure is 34T 12B. However, if the barcodes are inside the read the read structure would be 12B34T. In our case, we will mostly have the following read structure: `20B+T 12B +T`
-* The container images that are described in the .def files must be created and available.
-* The fasta file of the vector's genomic sequence must be available in the same directory as the pipeline.
-* The fasta file of the reference genome must be available in the same directory as the pipeline, and its name must strt with the name of the genome (hg19, hg38...) and finish with the `.fa`extension. 
+  * `--runfolderDir` must point to the BCL run folder.
+  * `--instrument` is not required on this path. `bcl2fastq` handles index orientation internally.
+  * `--readStructure` is not required on this path.
+* If the input is a FASTQ folder:
+  * `--runfolderDir` must still be provided, but it is only used as the run reference directory.
+  * `--FASTQfolderDir` must point to the folder containing the undetermined FASTQ files.
+  * `--readStructure` must describe the structure of template and barcode sequences. If a read has 34 template nucleotides and the barcodes are separate 12 nt reads, the read structure is `34T 12B`. If the barcodes are embedded in the read, the read structure could be `12B34T`. In this workflow the most common value is `20B+T 12B +T`.
+  * `--instrument` only matters on this FASTQ path, because `CREATE_demux_samplesheet_local` uses it to decide whether `index2` stays forward-oriented or is reverse-complemented before `fqtk` demultiplexing. Supported values are `MiSeq`, `NextSeq2000`, and `NextSeq500`.
+* The container images described in the `.def` files must be created and available.
+* The FASTA file of the vector's genomic sequence must be available in the same directory as the pipeline.
+* The FASTA file of the reference genome must be available in the same directory as the pipeline, and its name must start with the genome name (hg19, hg38...) and finish with the `.fa` extension.
 
 ## Running the pipeline
 
@@ -49,40 +56,43 @@ The pipeline can be run using the following command when running with a BCL inpu
 nextflow run main.nf \
     --BCLorFASTQ BCL \
     --runfolderDir /path/to/BCL/Run/Folder \
-    --samplesheet /path/to/SampleSheet.csv \
+    --samplesheet /path/to/Example_SampleSheet.csv \
     --projectName ProjectName \
-    --readStructure '20B+T 12B +T' \
+    --outdir /path/to/results \
     -with-report reports/ProjectName_report.html \
-    --instrument 'MiSeq' \
     -with-trace reports/ProjectName_trace.txt \
     -resume
 ```
 
-When we have a FASTQ input, we can run the pipeline with the following command:
+When using a FASTQ input folder, we can run the pipeline with the following command:
 
 ```
 nextflow run main.nf \
     --BCLorFASTQ FASTQ \
     --runfolderDir /path/to/FASTQ/Run/Folder \
-    --samplesheet /path/to/SampleSheet.csv \
+    --samplesheet /path/to/Example_SampleSheet.csv \
     --FASTQfolderDir /path/to/Undetermined_FASTQ_Files \
     --readStructure '20B+T 12B +T' \
     --projectName ProjectName \
+    --outdir /path/to/results \
     -with-report reports/ProjectName_report.html \
-    --instrument 'MiSeq' \
+    --instrument 'NextSeq2000' or 'MiSeq' \
     -with-trace reports/ProjectName_trace.txt \
     -resume
 ```
 
 ## Output
 
-The output of the pipeline will be in the `results` folder. The folder structure will be as follows:
+The output of the pipeline is written under `--outdir`. A typical folder structure is:
 
 ```
 results
+├── 00_create_demux_samplesheet
+│   └── ProjectName                  # FASTQ input only
+├── 00_demux_unknown_qc
+│   └── ProjectName                  # BCL and FASTQ inputs
 ├── 00_normalized_index_length
-│   ├── ProjectName (every step will have a folder with the project name)
-│   │   ├── files
+│   └── ProjectName                  # every published step uses a project-specific subfolder
 ├── 1_demuxed
 ├── 2_extractedumi
 ├── 3_fastqcraw
@@ -102,6 +112,14 @@ results
 ├── 17_sitesfinal_to_points
 
 ```
+
+For both BCL and FASTQ inputs, `00_demux_unknown_qc/ProjectName` contains four summary files:
+* `demux_unknown_barcode_qc.metrics.tsv`
+* `demux_unknown_barcode_qc.top_unknowns.tsv`
+* `demux_unknown_barcode_qc.indicators.txt`
+* `demux_unknown_barcode_qc.metrics.json`
+
+On the FASTQ path, this QC step uses the demultiplexed sample FASTQs together with the original `Undetermined_*` FASTQs from `--FASTQfolderDir`.
 
 ## LICENSE
 
