@@ -2,7 +2,7 @@ process FASTQC_TRIMMED {
     tag "${meta.id}"
     label 'process_medium'
 
-    publishDir "${params.runfolderDir}/../results/6_fastqctrimmed/${params.projectName}", mode: 'symlink', overwrite: true
+    publishDir "${params.outdir}/6_fastqctrimmed/${params.projectName}", mode: 'copy', overwrite: true
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

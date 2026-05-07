@@ -1,7 +1,7 @@
 process ALIGNMENT_local {
 
     scratch true
-    publishDir "${params.runfolderDir}/../results/13_alignment/${params.projectName}", mode: 'symlink', overwrite: true
+    publishDir "${params.outdir}/13_alignment/${params.projectName}", mode: 'copy', overwrite: true
 
     input:
     tuple val(sample), path(r1), path(r2), val(genome_index)

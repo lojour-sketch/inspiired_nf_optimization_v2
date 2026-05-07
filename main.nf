@@ -5,6 +5,7 @@ params.BCLorFASTQ = '' //options: BCL or FASTQ
 params.runfolderDir = ''
 params.projectName = ''
 params.samplesheet = '' // this sheet contains barcodes, processing parameters, LTR fragments, etc.
+params.outdir = '' // output directory for workflow results
 
 params.FASTQfolderDir = '' // path to the folder with Undetermined FASTQ files (only for FASTQ input)
 params.readStructure = '' // this is the read structure of the FASTQ files (only for FASTQ input)
@@ -15,6 +16,7 @@ params.instrument = '' // this is the sequencing machine used
 if (!params.samplesheet) error "Missing --samplesheet parameter, provide path to samplesheet"
 if (!params.runfolderDir) error "Missing --runfolderDir parameter. provide path to BCL data folder or FASTQ data folder. "
 if (!params.projectName) error "Missing --projectName parameter, provide the name of the project to organize the result folders"
+if (!params.outdir) error "Missing --outdir parameter, provide the output directory for workflow results"
 if (!params.BCLorFASTQ) error "Missing --BCLorFASTQ parameter, provide the type of data: BCL or FASTQ"
 if (params.BCLorFASTQ != 'BCL' && params.BCLorFASTQ != 'FASTQ')  error "--BCLorFASTQ parameter must be either BCL or FASTQ"
 if (params.BCLorFASTQ == 'FASTQ') {

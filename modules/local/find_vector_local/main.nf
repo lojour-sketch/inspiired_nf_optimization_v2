@@ -1,6 +1,6 @@
 process FINDVECTOR_local {
 
-    publishDir "${params.runfolderDir}/../results/10_findvector/${params.projectName}", mode: 'symlink', overwrite: true
+    publishDir "${params.outdir}/10_findvector/${params.projectName}", mode: 'copy', overwrite: true
 
     input:
     tuple val(sample), path(read1), path(read2), val(primer), val(ltrbit), val(largeLTRfrag), val(project), val(mingDNA)

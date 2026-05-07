@@ -2,7 +2,7 @@ process DEMUXING_FASTQ_local {
 
     debug true
 
-    publishDir "${params.runfolderDir}/../results/1_demuxed_undetermined/${params.projectName}", mode: 'symlink', overwrite: true
+    publishDir "${params.outdir}/1_demuxed_undetermined/${params.projectName}", mode: 'copy', overwrite: true
 
     input:
     tuple path(FASTQfolderDir), path(samplesheet), val(readStructure)

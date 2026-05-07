@@ -1,6 +1,6 @@
 process ALLSITES_TO_SITESFINAL_edited_grouping_local {
 
-    publishDir "${params.runfolderDir}/../results/16_sitesfinal/${params.projectName}", mode: 'symlink', overwrite: true
+    publishDir "${params.outdir}/16_sitesfinal/${params.projectName}", mode: 'copy', overwrite: true
 
     input:
     tuple val(sample), path(allsites), path(indivFile)

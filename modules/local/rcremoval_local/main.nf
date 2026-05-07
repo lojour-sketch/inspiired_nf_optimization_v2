@@ -2,7 +2,7 @@ process RCremoval_inspiired_local {
 
     cache 'lenient'
 
-    publishDir "${params.runfolderDir}/../results/9_reverse_complement_removal/${params.projectName}", mode: 'symlink', overwrite: true
+    publishDir "${params.outdir}/9_reverse_complement_removal/${params.projectName}", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(read1), path(read2), val(primer), val(ltrbit), val(largeLTRfrag), val(project), val(mingDNA), val(unique_linker), val(common_linker)

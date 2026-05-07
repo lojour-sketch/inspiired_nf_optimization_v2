@@ -1,6 +1,6 @@
 process UMIEXTRACT_local {
 
-    publishDir "${params.runfolderDir}/../results/2_extractedumi/${params.projectName}", mode: 'symlink', overwrite: true
+    publishDir "${params.outdir}/2_extractedumi/${params.projectName}", mode: 'copy', overwrite: true
 
     input:
     tuple val(sample_id), val(linker1), val(linker2), path(reads), val(was_modified)

@@ -1,6 +1,6 @@
 process SITESFINAL_TO_POINTS_local {
 
-    publishDir "${params.runfolderDir}/../results/17_sitesfinal_to_points/${params.projectName}", mode: 'symlink', overwrite: true
+    publishDir "${params.outdir}/17_sitesfinal_to_points/${params.projectName}", mode: 'copy', overwrite: true
 
     input:
     tuple val(sample), path(allsites), path(sitesfinal), val(refGenome), path(refGenomeFile), val(refKnowngeneFile)

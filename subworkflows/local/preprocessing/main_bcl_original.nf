@@ -7,7 +7,6 @@ include { LTRchecking_seqkit_local } from '../../../modules/local/LTR_primer_che
 include { RCremoval_inspiired_local } from '../../../modules/local/rcremoval_local/main'
 include { FINDVECTOR_local } from '../../../modules/local/find_vector_local/main'
 include { SHORTREMOVE_local } from '../../../modules/local/short_seq_removal_local/main'
-include { UNKNOWN_BARCODE_QC_local } from '../../../modules/local/unknown_barcode_qc_local/main'
 
 // MAIN
 
@@ -45,59 +44,31 @@ workflow PREPROCESSING_wfl {
 
 
         BCL2FASTQ_local(ch_bcl_primer_input)
-            // FIX: BCL2FASTQ_local runs once (.take(1)) so its .fastq output emits one tuple.
-            // The original .collect() wrapped that tuple in an extra LinkedList, causing a
-            // MissingMethodException downstream. Removed .collect() here.
-            BCL2FASTQ_local.out.fastq                    .set { ch_demux_fastq }
+            BCL2FASTQ_local.out.fastq           .collect().set { ch_demux_fastq }
             BCL2FASTQ_local.out.fastq_idx       .collect().set { ch_fastq_idx }
-            BCL2FASTQ_local.out.undetermined            .set { ch_undetermined_files }
             BCL2FASTQ_local.out.undetermined    .collect().set { ch_undetermined }
             BCL2FASTQ_local.out.undetermined_idx.collect().set { ch_undetermined_idx }
             BCL2FASTQ_local.out.reports         .collect().set { ch_bcl_reports }
             BCL2FASTQ_local.out.stats           .collect().set { ch_bcl_stats }
             BCL2FASTQ_local.out.interop         .collect().set { ch_bcl_interop }
 
-        ch_demux_fastq
-            .map { it[1] }
-            .flatten()
-            .collect()
-            .set { ch_assigned_fastqs_for_qc }
-
-        ch_undetermined_files
-            .map { meta, undetermined_file -> undetermined_file }
-            .collect()
-            .set { ch_unknown_fastqs_for_qc }
-
-        ch_bcl_input_normalized
-            .map { sid, normalized_samplesheet, runfolder -> normalized_samplesheet }
-            .take(1)
-            .set { ch_normalized_samplesheet_for_qc }
-
-        UNKNOWN_BARCODE_QC_local(
-            ch_assigned_fastqs_for_qc,
-            ch_unknown_fastqs_for_qc,
-            ch_normalized_samplesheet_for_qc
-        )
-
 
     ///////////////////////// Extracting UMI from reads and adding it to headers /////////////////////////
-        // FIX: BCL2FASTQ outputs one file per sample per read (R1/R2) in subdirectories
-        // named after each sample. Use flatten() + groupTuple() to pair R1/R2 files per
-        // sample, mirroring the pipeline_bcl_undemux approach. This avoids the old
-        // .combine() path that emitted LinkedList items Nextflow cannot spread into
-        // multi-parameter closures (MissingMethodException on closure17/18).
+        //crete necessary input channel for umi_extract_local
+        //first create channel with tuple(sample_id, [R1, R2])
         ch_reads_by_sample = ch_demux_fastq
-            .map { it -> it[1] }        // drop meta, get list of all per-sample FASTQs
-            .flatten()                  // emit each file individually
+            .map { id, file_list -> file_list }  // ignore id (e.g., "run1")
+            .flatten()
             .map { file ->
-                def sample_name = file.getParent().getFileName().toString()
+                def name = file.getFileName().toString()
+                def sample_name = name.replaceAll(/_S\d+_R[12]_001\.fastq\.gz$/, '')
                 tuple(sample_name, file)
             }
-            .groupTuple(sort: true)     // group [R1, R2] by sample name
-
+            .groupTuple()
+  
         // now we combine the reads channel with the linkers channel per sample
         ch_reads_by_sample
-            .join(ch_linkers)
+            .join(ch_linkers) //join by sample_id
             .combine(ch_modified_samples)
             .map { sample_id, reads, linker1, linker2, modified_list ->
                     def was_modified = modified_list.contains(sample_id)
@@ -192,6 +163,7 @@ workflow PREPROCESSING_wfl {
         .set { ch_shortremove_input }
 
         SHORTREMOVE_local(ch_shortremove_input)
+
 
 
 

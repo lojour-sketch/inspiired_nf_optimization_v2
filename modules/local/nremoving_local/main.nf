@@ -1,7 +1,7 @@
  process N_REMOVING {
 
     tag "${meta.id}"
-    publishDir "${params.runfolderDir}/../results/5_removed_n/${params.projectName}", mode: 'copy', overwrite: true
+    publishDir "${params.outdir}/5_removed_n/${params.projectName}", mode: 'copy', overwrite: true
 
     input:
     tuple val(meta), path(reads)

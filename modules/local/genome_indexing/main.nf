@@ -1,6 +1,6 @@
 process GENOME_INDEXING_local {
 
-    publishDir "${params.runfolderDir}/../results/12_genome_index/${genome_name}", mode: 'symlink', overwrite: true
+    publishDir "${params.outdir}/12_genome_index/${genome_name}", mode: 'copy', overwrite: true
 
     input:
     tuple val(genome_name), path(refGenomeFile)
@@ -9,8 +9,8 @@ process GENOME_INDEXING_local {
     tuple val(genome_name), path("${genome_name}_STAR_index"), emit: index
 
      when:
-    !file("${params.runfolderDir}/../results/${genome_name}/${genome_name}_STAR_index/SA").exists() || 
-    !file("${params.runfolderDir}/../results/${genome_name}/${genome_name}_STAR_index/SAindex").exists()
+    !file("${params.outdir}/${genome_name}/${genome_name}_STAR_index/SA").exists() || 
+    !file("${params.outdir}/${genome_name}/${genome_name}_STAR_index/SAindex").exists()
 
     script:
     """

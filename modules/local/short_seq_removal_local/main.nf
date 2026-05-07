@@ -1,6 +1,6 @@
 process SHORTREMOVE_local{
 
-    publishDir "${params.runfolderDir}/../results/11_short_remove/${params.projectName}", mode: 'symlink', overwrite: true
+    publishDir "${params.outdir}/11_short_remove/${params.projectName}", mode: 'copy', overwrite: true
 
     input:
     tuple val(sample), path(read1), path(read2), val(primer), val(ltrbit), val(largeLTRfrag), val(project), val(mingDNA)

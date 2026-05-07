@@ -31,6 +31,16 @@ sitesFinal <- args[2]
 ref_genome <- args[3]
 txdbFile <- args[4]
 
+# Force writable cache locations inside task work dir (containers may have read-only /root)
+cache_root <- file.path(getwd(), ".clusterprofiler_cache")
+dir.create(cache_root, recursive = TRUE, showWarnings = FALSE)
+xdg_data_home <- file.path(cache_root, "xdg_data")
+xdg_cache_home <- file.path(cache_root, "xdg_cache")
+dir.create(xdg_data_home, recursive = TRUE, showWarnings = FALSE)
+dir.create(xdg_cache_home, recursive = TRUE, showWarnings = FALSE)
+Sys.setenv(HOME = cache_root, XDG_DATA_HOME = xdg_data_home, XDG_CACHE_HOME = xdg_cache_home)
+message("Using writable local cache at: ", xdg_data_home)
+
 # Load the TxDb package correctly
 message("Loading TxDb package: ", txdbFile)
 if (txdbFile == "TxDb.Hsapiens.UCSC.hg19.knownGene") {
@@ -192,10 +202,16 @@ peak <- sitescollapsed
             message("No GO enrichment results found, skipping dotplot.")
         }
 
-        keggenrichment <- enrichKEGG(
-            gene = entrez_ids,
-            organism = "hsa",
-            pvalueCutoff = 0.05
+        keggenrichment <- tryCatch(
+            enrichKEGG(
+                gene = entrez_ids,
+                organism = "hsa",
+                pvalueCutoff = 0.05
+            ),
+            error = function(e) {
+                message("KEGG enrichment failed; continuing without KEGG plot. Error: ", conditionMessage(e))
+                NULL
+            }
         )
 
         if(!is.null(keggenrichment) && nrow(as.data.frame(keggenrichment)) > 0) {

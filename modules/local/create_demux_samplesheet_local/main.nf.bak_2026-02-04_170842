@@ -1,6 +1,6 @@
 process CREATE_demux_samplesheet_local {
 
-    publishDir "${params.outdir}/00_create_demux_samplesheet/${params.projectName}", mode: 'copy', overwrite: true
+    publishDir "${params.runfolderDir}/../results/00_create_demux_samplesheet/${params.projectName}", mode: 'symlink', overwrite: true
 
     input:
     tuple val(sample), path(normalized_samplesheet), path(rundir)
@@ -10,15 +10,14 @@ process CREATE_demux_samplesheet_local {
 
     script:
     """
-    if [ "${params.instrument}" == "MiSeq" ]
+    if [${params.instrument} == 'MiSeq']
     then
         create_demux_samplesheet.py --samplesheet ${normalized_samplesheet}
-    elif [ "${params.instrument}" == "NextSeq2000" ] || [ "${params.instrument}" == "NextSeq500" ]
+    elif  [${params.instrument} == 'NextSeq2000'] || [${params.instrument} == 'NextSeq500']
     then
         create_demux_samplesheet_rev_comp_index2.py --samplesheet ${normalized_samplesheet}
-    else
-        echo "ERROR: Unsupported instrument: ${params.instrument}" >&2
-        exit 1
     fi
+
     """
+
 }

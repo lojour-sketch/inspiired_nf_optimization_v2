@@ -1,6 +1,6 @@
 process BAM_TO_ALLSITES_local {
 
-    publishDir "${params.runfolderDir}/../results/15_allsites/${params.projectName}", mode: 'symlink', overwrite: true
+    publishDir "${params.outdir}/15_allsites/${params.projectName}", mode: 'copy', overwrite: true
 
     input:
     tuple val(sample), path(sorted), val(minPctIdent), val(maxAlignStart), val(maxFragLength)

@@ -1,6 +1,6 @@
 process NORMALIZE_index_length_local {
 
-    publishDir "${params.runfolderDir}/../results/00_normalized_index_length/${params.projectName}", mode: 'symlink', overwrite: true
+    publishDir "${params.outdir}/00_normalized_index_length/${params.projectName}", mode: 'copy', overwrite: true
 
     input:
     tuple val(sample), path(samplesheet), path(runfolder)
