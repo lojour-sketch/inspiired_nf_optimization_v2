@@ -1,0 +1,8 @@
+Sample_ID,r1,index_fastq,r2
+Polyclonal_100pct,/absolute/path/assigned/Polyclonal_100pct_R1.fastq.gz,/absolute/path/assigned/Polyclonal_100pct_I2.fastq.gz,/absolute/path/assigned/Polyclonal_100pct_R2.fastq.gz
+Polyclonal_99pct,/absolute/path/assigned/Polyclonal_99pct_R1.fastq.gz,/absolute/path/assigned/Polyclonal_99pct_I2.fastq.gz,/absolute/path/assigned/Polyclonal_99pct_R2.fastq.gz
+Polyclonal_95pct,/absolute/path/assigned/Polyclonal_95pct_R1.fastq.gz,/absolute/path/assigned/Polyclonal_95pct_I2.fastq.gz,/absolute/path/assigned/Polyclonal_95pct_R2.fastq.gz
+Polyclonal_90pct,/absolute/path/assigned/Polyclonal_90pct_R1.fastq.gz,/absolute/path/assigned/Polyclonal_90pct_I2.fastq.gz,/absolute/path/assigned/Polyclonal_90pct_R2.fastq.gz
+Polyclonal_75pct,/absolute/path/assigned/Polyclonal_75pct_R1.fastq.gz,/absolute/path/assigned/Polyclonal_75pct_I2.fastq.gz,/absolute/path/assigned/Polyclonal_75pct_R2.fastq.gz
+Polyclonal_50pct,/absolute/path/assigned/Polyclonal_50pct_R1.fastq.gz,/absolute/path/assigned/Polyclonal_50pct_I2.fastq.gz,/absolute/path/assigned/Polyclonal_50pct_R2.fastq.gz
+Polyclonal_0pct,/absolute/path/assigned/Polyclonal_0pct_R1.fastq.gz,/absolute/path/assigned/Polyclonal_0pct_I2.fastq.gz,/absolute/path/assigned/Polyclonal_0pct_R2.fastq.gz

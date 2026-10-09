@@ -1,126 +1,75 @@
-# INSPIIRED optimization with Nextflow
+# bushman_fast: original-compatible INSPIIRED in Nextflow
 
-This repository contains `pipeline_fixed`, a minimal Nextflow variant based on [liberentaizp/inspiired_nf_optimization](https://github.com/liberentaizp/inspiired_nf_optimization), which itself builds on [INSPIIRED](https://github.com/BushmanLab/INSPIIRED?tab=readme-ov-file) software's [intSiteCaller](https://github.com/BushmanLab/intSiteCaller) module.
+This release modernizes the original Bushman insertion-site analysis using Nextflow and a frozen runtime. It retains independent BLAT alignments, the original candidate-pair filters, multihit connected components, unique-site Sonic abundance, and the original coordinate-standardization rules. The default caller is the optimized `compact` implementation; `--caller_impl original` runs the frozen scientific expressions with the same compatibility adapters.
 
-Compared with the original Nextflow pipeline by liberentaizp, `pipeline_fixed` keeps the same overall workflow while adding some small fixes:
-* Support for both BCL run-folder inputs and FASTQ-folder inputs
-* A demultiplexing unknown-barcode QC report for both BCL and FASTQ runs
-* More robust annotation in containers by using a writable local cache for `clusterProfiler` and continuing if KEGG enrichment is unavailable
+Read the [objective and original workflow structure](docs/objectives_and_structure.md), [module-by-module comparison](docs/pipeline_changes.md), [validation report](reports/pipeline_changes_report.html), and [results guide](docs/results.md). The report distinguishes compatibility adaptations, software bug fixes, execution improvements, and optional analysis changes. Historical RUN809 outputs created before the effective-linker correction are explicitly provisional and require rerunning.
 
+## Install the tested environment
 
-## Prerequisites
+Use Linux x86_64, Nextflow 25.04.6 (the tested version), Java supported by that Nextflow version, and Singularity/Apptainer. Obtain the separate **bushman_runtime.sif** release artifact and verify it:
 
-In order to run this pipeline, some prerequisites must be met:
-* The following top-level parameters are always required:
-  * `--BCLorFASTQ`
-  * `--samplesheet`
-  * `--runfolderDir`
-  * `--projectName`
-  * `--outdir`
-* `--samplesheet` must point to a sample sheet that contains the following columns:
-  * `Sample_ID`: Sample ID
-  * `index`: Index sequence (sample unique linker)
-  * `index2`: Second index sequence (Golay Sequence)
-  * `common_linker`: Common linker sequence
-  * `primer`: Primer sequence
-  * `ltrbit`: LTR bit sequence
-  * `largeLTRFrag`: Large LTR fragment sequence
-  * `Sample_Project`: Project name
-  * `mingDNA`: Minimum DNA length
-  * `minPctIdent`: Minimum percentage of identity
-  * `maxAlignStart`: Maximum alignment start
-  * `maxFragLength`: Maximum fragment length
-  * `refGenome`: Reference genome name
-  * `vectorSeq`: Vector sequence path
-  
-An example sample sheet is present in this repository as `Example_SampleSheet.csv`.
-
-* If the input is a BCL Run Folder:
-  * `--runfolderDir` must point to the BCL run folder.
-  * `--instrument` is not required on this path. `bcl2fastq` handles index orientation internally.
-  * `--readStructure` is not required on this path.
-* If the input is a FASTQ folder:
-  * `--runfolderDir` must still be provided, but it is only used as the run reference directory.
-  * `--FASTQfolderDir` must point to the folder containing the undetermined FASTQ files.
-  * `--readStructure` must describe the structure of template and barcode sequences. If a read has 34 template nucleotides and the barcodes are separate 12 nt reads, the read structure is `34T 12B`. If the barcodes are embedded in the read, the read structure could be `12B34T`. In this workflow the most common value is `20B+T 12B +T`.
-  * `--instrument` only matters on this FASTQ path, because `CREATE_demux_samplesheet_local` uses it to decide whether `index2` stays forward-oriented or is reverse-complemented before `fqtk` demultiplexing. Supported values are `MiSeq`, `NextSeq2000`, and `NextSeq500`.
-* The container images described in the `.def` files must be created and available.
-* The FASTA file of the vector's genomic sequence must be available in the same directory as the pipeline.
-* The FASTA file of the reference genome must be available in the same directory as the pipeline, and its name must start with the genome name (hg19, hg38...) and finish with the `.fa` extension.
-
-## Running the pipeline
-
-The pipeline can be run using the following command when running with a BCL input:
-
-```
-nextflow run main.nf \
-    --BCLorFASTQ BCL \
-    --runfolderDir /path/to/BCL/Run/Folder \
-    --samplesheet /path/to/Example_SampleSheet.csv \
-    --projectName ProjectName \
-    --outdir /path/to/results \
-    -with-report reports/ProjectName_report.html \
-    -with-trace reports/ProjectName_trace.txt \
-    -resume
+```bash
+sha256sum /absolute/path/bushman_runtime.sif
+# 4afa1dd705f7500c4b203a448cba06db35d580403270046e3a7a3a937418f4ed
 ```
 
-When using a FASTQ input folder, we can run the pipeline with the following command:
+The exact tested image contains R 4.4.1, sonicLength 1.4.7, and the scientific dependencies. The code archive does not contain the 1.6 GB image or genomic references. Until the image is uploaded separately, public users must obtain it from the release owner. The historical container recipe documents how the local image was assembled; it requires additional build inputs and is **not a complete portable rebuild recipe**. See [runtime and provenance](docs/runtime.md).
 
-```
-nextflow run main.nf \
-    --BCLorFASTQ FASTQ \
-    --runfolderDir /path/to/FASTQ/Run/Folder \
-    --samplesheet /path/to/Example_SampleSheet.csv \
-    --FASTQfolderDir /path/to/Undetermined_FASTQ_Files \
-    --readStructure '20B+T 12B +T' \
-    --projectName ProjectName \
-    --outdir /path/to/results \
-    -with-report reports/ProjectName_report.html \
-    --instrument 'NextSeq2000' or 'MiSeq' \
-    -with-trace reports/ProjectName_trace.txt \
-    -resume
-```
+Prepare your samplesheet, FASTQ manifest, and reference manifest using [examples](examples/). Use absolute paths for vector FASTA, reference twoBit, frozen RefSeq annotation, optional original Seqinfo RDS, and FASTQ files. The twoBit must contain the same sequences as your original analysis; changing to a primary-chromosome-only reference changes multihit interpretation.
 
-## Output
+## Assigned FASTQs with original index processing
 
-The output of the pipeline is written under `--outdir`. A typical folder structure is:
-
-```
-results
-├── 00_create_demux_samplesheet
-│   └── ProjectName                  # FASTQ input only
-├── 00_demux_unknown_qc
-│   └── ProjectName                  # BCL and FASTQ inputs
-├── 00_normalized_index_length
-│   └── ProjectName                  # every published step uses a project-specific subfolder
-├── 1_demuxed
-├── 2_extractedumi
-├── 3_fastqcraw
-├── 4_trimmedfastq_fastqc
-├── 5_removed_n
-├── 6_fastqctrimmed
-├── 7_multiqcaftertrim
-├── 8_LTR_presence
-├── 9_reverse_complement_removal
-├── 10_findvector
-├── 11_short_remove
-├── 12_genome_index
-├── 13_alignment
-├── 14_index_sort_bam
-├── 15_allsites
-├── 16_sitesfinal
-├── 17_sitesfinal_to_points
-
+```bash
+nextflow run main.nf -profile slurm \
+  --BCLorFASTQ FASTQ --demux_mode original \
+  --samplesheet /absolute/path/samples.csv \
+  --fastq_manifest /absolute/path/fastqs.csv \
+  --runfolderDir /absolute/path/run \
+  --reference_manifest /absolute/path/references.json \
+  --bushman_r_container /absolute/path/bushman_runtime.sif \
+  --projectName MyRun --outdir /absolute/path/results/MyRun
 ```
 
-For both BCL and FASTQ inputs, `00_demux_unknown_qc/ProjectName` contains four summary files:
-* `demux_unknown_barcode_qc.metrics.tsv`
-* `demux_unknown_barcode_qc.top_unknowns.tsv`
-* `demux_unknown_barcode_qc.indicators.txt`
-* `demux_unknown_barcode_qc.metrics.json`
+The assigned FASTQ manifest must contain `Sample_ID,r1,index_fastq,r2`. The index FASTQ is required to reproduce original index-quality filtering and Golay correction. R1/R2 pairs alone are insufficient for this mode. The default index selection for RUN809 is I2; raw undetermined FASTQs use `--golay_index_read I1` or `I2` according to the actual library layout.
 
-On the FASTQ path, this QC step uses the demultiplexed sample FASTQs together with the original `Undetermined_*` FASTQs from `--FASTQfolderDir`.
+## BCL input
 
-## LICENSE
+```bash
+nextflow run main.nf -profile slurm \
+  --BCLorFASTQ BCL --demux_mode original \
+  --samplesheet /absolute/path/samples.csv \
+  --runfolderDir /absolute/path/IlluminaRun \
+  --reference_manifest /absolute/path/references.json \
+  --bushman_r_container /absolute/path/bushman_runtime.sif \
+  --bcl_bases_mask 'I20Y159,I12,Y143' --golay_index_read I2 \
+  --projectName MyRun --outdir /absolute/path/results/MyRun
+```
 
-This project is licensed under the GPLv3 License - see the [LICENSE](LICENSE) file for details
+The BCL adapter uses a digest-pinned bcl2fastq container and preserves index reads for subsequent original processing. Configure the bases mask for your sequenced read layout; RUN809's mask is not universal. This adapter is inherited from the Nextflow modernization and is an input extension, rather than a reconstruction of every original BCL workflow. Its routing has synthetic validation; complete raw-BCL-to-historical equivalence is a separate validation scope.
+
+## Important controls
+
+| Option | Default | Meaning |
+|---|---|---|
+| `--caller_impl` | `compact` | Original scientific caller with faster row memberships/intersections; `original` and `indexed` remain available. |
+| `--site_window_bp` | `5` | Original one-pass, frequency/tie standardization across a report group. `0` retains exact insertion coordinates. This does not change the multihit graph tolerance. |
+| `--abundance_method` | `sonic` | Original unique-site estimator. `fragment_diversity` is explicitly a different mode. |
+| `--abundance_failure_policy` | `fail` | Stop when Sonic rejects input. `record` publishes valid specimens and records missing abundance as unavailable without filtering invalid fragments. |
+| `--annotation_mode` | `bushman` | Frozen Bushman RefSeq nearest-gene and overlap annotation; `off` disables it. |
+| `--generate_plots` | `true` | Generate insertion-location, annotation, rank, cumulative-abundance and multihit PDFs with a browseable HTML index. |
+
+Original/golay modes derive `linkerCommon` from `linkerSequence`, exactly as upstream metadata processing does. An explicitly supplied forward marker is overwritten and retained as `requested_linkerCommon` for auditing. For RUN809 the effective marker is **AGTCCCTTAAGCGGAG**. Optional fixed demultiplexing respects a supplied marker and is a separate processing mode.
+
+The default configuration targets Slurm. Supply site-specific queues/resources with `-c your_cluster.config`. Use `-profile local` for a suitably sized workstation; RUN809-scale preparation/calling requests up to 96 GB. The synthetic validation uses smaller explicit resources.
+
+## Test and inspect results
+
+```bash
+bash tests/run_validation.sh /absolute/path/bushman_runtime.sif
+```
+
+The suite checks effective metadata against the actual upstream R helper, randomized original-operation oracles, the original Sonic rejection rule, full synthetic original/indexed/compact caller and report parity, and the integrated plotting step. Full original RUN809 0% validation is recorded separately in the HTML report.
+
+Open `results/MyRun/17_sitesfinal_to_points/MyRun/hg38__REPORT_GROUP/plots/index.html`. Scientific calls are in `04_original_calls`; modeled abundance, multihit abundance, estimator inputs and report status are in `05_original_report`. Read the [results guide](docs/results.md) before interpreting clonality.
+
+Upstream scientific source revisions and hashes are recorded in `vendor/bushman/PROVENANCE.json`. License: GPL-3.0-or-later for the Bushman-derived code; third-party tools retain their own terms. See [third-party attribution](THIRD_PARTY.md).

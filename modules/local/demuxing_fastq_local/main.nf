@@ -15,14 +15,17 @@ process DEMUXING_FASTQ_local {
     def fastqDir = FASTQfolderDir.toString()
     """
     
-    # Use find to get absolute paths (follows symlinks with -L)
-    R1_FILES=\$(find -L ${FASTQfolderDir} -maxdepth 1 -name "Undetermined_*_R1*.fastq.gz" -type f)
-    I1_FILES=\$(find -L ${FASTQfolderDir} -maxdepth 1 -name "Undetermined_*_I1*.fastq.gz" -type f)
-    R2_FILES=\$(find -L ${FASTQfolderDir} -maxdepth 1 -name "Undetermined_*_R2*.fastq.gz" -type f)
-
+    set -euo pipefail
+    mapfile -t R1_FILES < <(find -L "${FASTQfolderDir}" -maxdepth 1 -name "Undetermined_*_R1*.fastq.gz" -type f | sort)
+    mapfile -t I1_FILES < <(find -L "${FASTQfolderDir}" -maxdepth 1 -name "Undetermined_*_I1*.fastq.gz" -type f | sort)
+    mapfile -t R2_FILES < <(find -L "${FASTQfolderDir}" -maxdepth 1 -name "Undetermined_*_R2*.fastq.gz" -type f | sort)
+    if [[ \${#R1_FILES[@]} -ne 1 || \${#I1_FILES[@]} -ne 1 || \${#R2_FILES[@]} -ne 1 ]]; then
+        echo "Provide one synchronized R1/I1/R2 triplet; concatenate corresponding lanes in the same order before running." >&2
+        exit 1
+    fi
 
     fqtk demux \\
-        --inputs \$R1_FILES \$I1_FILES \$R2_FILES \\
+        --inputs "\${R1_FILES[0]}" "\${I1_FILES[0]}" "\${R2_FILES[0]}" \\
         --read-structures ${readStructure} \\
         --sample-metadata ${samplesheet} \\
         --output .

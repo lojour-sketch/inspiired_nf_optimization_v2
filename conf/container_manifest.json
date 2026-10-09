@@ -1,0 +1,17 @@
+{
+  "verified_date": "2026-10-05",
+  "verification": "Quay repository tag API",
+  "images": {
+    "quay.io/nf-core/bcl2fastq:2.20.0.422": {
+      "version_tag": "2.20.0.422",
+      "manifest_digest": "sha256:7689cdd46890c93fa9bf23633e51532961cc21131d69937b58e5987f7cb10580",
+      "pinned": "quay.io/nf-core/bcl2fastq@sha256:7689cdd46890c93fa9bf23633e51532961cc21131d69937b58e5987f7cb10580"
+    },
+    "quay.io/biocontainers/fqtk:0.3.1--ha6fb395_3": {
+      "version_tag": "0.3.1--ha6fb395_3",
+      "manifest_digest": "sha256:ce643b393db794c93c1b28c6e22640cc196fe240c1f552eec35a8916efbc5f5e",
+      "pinned": "quay.io/biocontainers/fqtk@sha256:ce643b393db794c93c1b28c6e22640cc196fe240c1f552eec35a8916efbc5f5e"
+    }
+  },
+  "scope": "Active BCL and optional fixed-FASTQ input adapters only; scientific runtime recorded in containers/runtime.lock.json"
+}

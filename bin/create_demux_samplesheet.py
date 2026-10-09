@@ -22,14 +22,10 @@ args = parser.parse_args()
 
 samplesheet = args.samplesheet
 
-#load samplesheet
-with open(samplesheet, 'r') as f:
-    # Skip lines until we find [Data]
-    for line in f:
-        if line.strip() == '[Data]':
-            break
-    reader = csv.DictReader(f)
-    rows = list(reader)
+# Shared parser accepts Illumina [Data] sections or a plain CSV header.
+from validate_inputs import read_samplesheet
+rows = read_samplesheet(samplesheet)
+fieldnames = list(rows[0])
 
 #create demux_sheet
 with open('DemuxSampleSheet.tsv', 'w') as f:

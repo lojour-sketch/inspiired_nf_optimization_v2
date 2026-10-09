@@ -1,0 +1,12 @@
+package	version
+ShortRead	1.62.0
+igraph	2.3.4
+plyr	1.8.9
+vegan	2.7.6
+reldist	1.7.2
+reshape2	1.4.5
+hiAnnotator	1.38.0
+sonicLength	1.4.7
+pwalign	1.0.0
+data.table	1.18.2.1
+jsonlite	1.8.8

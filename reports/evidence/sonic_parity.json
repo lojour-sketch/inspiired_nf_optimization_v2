@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "scope": "Historical original 0% PCR evidence recomputed with frozen original 5 bp/Sonic reporting; corrected single-specimen report at the same scope",
+  "coordinate_abundance_rank_exact": true,
+  "proportions_equal_tolerance_1e_12": true,
+  "original_sites": 74,
+  "corrected_sites": 74,
+  "original_rounded_abundance": 99038,
+  "corrected_rounded_abundance": 99038,
+  "largest_unique_site_fraction": 0.7765,
+  "details": ""
+}

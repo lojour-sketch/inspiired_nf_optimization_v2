@@ -1,0 +1,20 @@
+Bootstrap: localimage
+From: containers/sitesfinal_rpackages.sif
+
+%files
+    vendor/bushman_r_library /opt/bushman_r_library
+    vendor/bushman_python /opt/bushman_python
+    vendor/bushman_r_sources/runtime_packages.tsv /opt/bushman_runtime_packages.tsv
+    vendor/bushman/tools/blat /usr/local/bin/blat
+
+%environment
+    export R_LIBS_USER=/opt/bushman_r_library
+    export PYTHONPATH=/opt/bushman_python
+    export LC_ALL=C
+
+%test
+    Rscript -e 'stopifnot(all(vapply(c("ShortRead","hiAnnotator","sonicLength","igraph","plyr","pwalign","vegan","reldist","reshape2"),requireNamespace,logical(1),quietly=TRUE)))'
+    python3 -c 'import numpy; assert numpy.__version__ == "1.26.4"'
+
+%runscript
+    exec Rscript "$@"

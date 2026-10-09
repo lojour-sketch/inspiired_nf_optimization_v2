@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "checks": ["60 randomized original scan/intersection oracles: duplicate rows/IDs/queries, NA, leading zero queries, missing keys, shuffled/reused loci, empty inputs and block boundaries", "100 randomized balanced/unequal native intersections and invalid-input guards", "seven compact AST anchors plus five existing indexed expansion anchors; candidate geometry unchanged without repeated revmap"],
+  "random_seeds": 60,
+  "native": {
+    "source_md5": "171790b8ab598f22b5267f0718153cc0",
+    "library_md5": "c8ee479ccc1e01a67e36153c67172bb0",
+    "R_version": "R version 4.4.1 (2024-06-14)",
+    "platform": "x86_64-pc-linux-gnu",
+    "build_directory": "workspace/bushman_fast/validation/release_original_replay_20261009/synthetic_final/.bushman_native/171790b8ab598f22b5267f0718153cc0-R4.4.1",
+    "build_command": "R CMD SHLIB bushman_pairing.c"
+  },
+  "benchmark": {
+    "scope": "dense-hub pairing kernel only; excludes compilation, BLAT, caller classifications and report",
+    "key_rows": 80000,
+    "candidate_pairs": 240,
+    "distinct_R1_loci": 240,
+    "distinct_R2_loci": 1,
+    "elapsed_seconds": {
+      "original": [3.531, 3.561, 3.547],
+      "indexed": [3.74, 3.731, 3.67],
+      "compact": [0.045, 0.041, 0.042]
+    },
+    "median_seconds": {
+      "original": 3.547,
+      "indexed": 3.731,
+      "compact": 0.042
+    },
+    "indexed_membership_rows": 19280000,
+    "compact_membership_rows": 160000,
+    "support_rows": 80000,
+    "complete_support_identical": true
+  }
+}

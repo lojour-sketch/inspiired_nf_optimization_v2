@@ -1,0 +1,11 @@
+{
+  "state": "completed",
+  "analysis_label": "RUN809 corrected release: 0% original-alignment replay",
+  "validation_label": "Caller checked against the historical original; preparation is validated separately. Full seven-sample corrected run remains pending.",
+  "site_window_bp": 5,
+  "specimens": "Polyclonal_0pct",
+  "figures": ["fig_points_Polyclonal_0pct.pdf", "clonality_Polyclonal_0pct.pdf", "annotated_points_Polyclonal_0pct.tsv"],
+  "inputs_modified": false,
+  "abundance_refit": false,
+  "unavailable_status_retained": true
+}

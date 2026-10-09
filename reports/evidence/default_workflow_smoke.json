@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "slurm_wrapper_job": 537505,
+  "exit_code": 0,
+  "elapsed_seconds": 309,
+  "scope": "Default caller (compact), local Nextflow profile, BUSHMAN_POOL and BUSHMAN_PLOTS; synthetic A/B/Empty libraries",
+  "nextflow_version": "25.04.6",
+  "fresh_tasks_executed": true
+}

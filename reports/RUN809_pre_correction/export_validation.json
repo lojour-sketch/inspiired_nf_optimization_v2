@@ -1,0 +1,50 @@
+{
+  "status": "passed",
+  "samples": {
+    "Polyclonal_100pct": {
+      "exact_sites": 7956,
+      "counts_match_stats": true,
+      "multihit_clusters": 677,
+      "original_files": ["/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_100pct/Polyclonal_100pct/sites.final.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_100pct/Polyclonal_100pct/multihitData.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_100pct/Polyclonal_100pct/stats.RData"]
+    },
+    "Polyclonal_99pct": {
+      "exact_sites": 8099,
+      "counts_match_stats": true,
+      "multihit_clusters": 712,
+      "original_files": ["/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_99pct/Polyclonal_99pct/sites.final.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_99pct/Polyclonal_99pct/multihitData.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_99pct/Polyclonal_99pct/stats.RData"]
+    },
+    "Polyclonal_95pct": {
+      "exact_sites": 8083,
+      "counts_match_stats": true,
+      "multihit_clusters": 707,
+      "original_files": ["/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_95pct/Polyclonal_95pct/sites.final.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_95pct/Polyclonal_95pct/multihitData.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_95pct/Polyclonal_95pct/stats.RData"]
+    },
+    "Polyclonal_90pct": {
+      "exact_sites": 7551,
+      "counts_match_stats": true,
+      "multihit_clusters": 651,
+      "original_files": ["/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_90pct/Polyclonal_90pct/sites.final.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_90pct/Polyclonal_90pct/multihitData.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_90pct/Polyclonal_90pct/stats.RData"]
+    },
+    "Polyclonal_75pct": {
+      "exact_sites": 6609,
+      "counts_match_stats": true,
+      "multihit_clusters": 598,
+      "original_files": ["/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_75pct/Polyclonal_75pct/sites.final.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_75pct/Polyclonal_75pct/multihitData.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_75pct/Polyclonal_75pct/stats.RData"]
+    },
+    "Polyclonal_50pct": {
+      "exact_sites": 5298,
+      "counts_match_stats": true,
+      "multihit_clusters": 456,
+      "original_files": ["/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_50pct/Polyclonal_50pct/sites.final.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_50pct/Polyclonal_50pct/multihitData.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_50pct/Polyclonal_50pct/stats.RData"]
+    },
+    "Polyclonal_0pct": {
+      "exact_sites": 85,
+      "counts_match_stats": true,
+      "multihit_clusters": 5,
+      "original_files": ["/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_0pct/Polyclonal_0pct/sites.final.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_0pct/Polyclonal_0pct/multihitData.RData", "/beegfs/home/lojour/Bioinfo_projects/INSPIRED_chunhui/bushman_fast/validation/run809_compact_20261008/results/04_original_calls/RUN809_compact/Polyclonal_0pct/Polyclonal_0pct/stats.RData"]
+    }
+  },
+  "coordinate_rule": "Original flank(granges(sites.final), -1, start=TRUE); 1-based point; original strand retained",
+  "scientific_source_files_modified": false,
+  "quantities": "Unique paired-read records and separate multihit distinct median fragment lengths; no Sonic fitting performed"
+}

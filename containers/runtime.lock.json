@@ -1,0 +1,14 @@
+{
+  "runtime_image": {
+    "filename": "bushman_runtime.sif",
+    "sha256": "4afa1dd705f7500c4b203a448cba06db35d580403270046e3a7a3a937418f4ed",
+    "bytes": 1697886208
+  },
+  "R": "4.4.1",
+  "sonicLength": "1.4.7",
+  "BLAT": "36x2",
+  "Nextflow_tested": "25.04.6",
+  "platform": "Linux x86_64",
+  "BLAT_binary_sha256": "4ca9d27cef60eeebab5fcb11b8819e62bc3fe668e8c51177f54ae42290547c94",
+  "BLAT_binary_bytes": 5116808
+}

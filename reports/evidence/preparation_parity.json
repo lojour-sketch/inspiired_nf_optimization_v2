@@ -1,0 +1,396 @@
+{
+  "status": "passed",
+  "checks": {
+    "trim_statistics": {
+      "identical": true,
+      "detail": ""
+    },
+    "keys.RData": {
+      "identical": true,
+      "detail": ""
+    },
+    "primerIDData.RData": {
+      "identical": true,
+      "detail": ""
+    },
+    "FASTA_chunk_names": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-1.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-10.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-11.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-12.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-13.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-14.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-15.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-16.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-17.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-18.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-19.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-2.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-20.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-21.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-22.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-23.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-24.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-25.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-26.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-27.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-3.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-4.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-5.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-6.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-7.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-8.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R1-9.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-1.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-10.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-11.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-12.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-13.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-14.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-15.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-16.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-17.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-18.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-19.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-2.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-20.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-21.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-22.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-23.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-24.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-25.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-26.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-27.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-28.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-29.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-3.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-30.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-31.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-32.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-33.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-34.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-35.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-36.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-37.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-38.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-39.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-4.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-40.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-41.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-42.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-43.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-44.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-45.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-46.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-47.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-48.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-49.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-5.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-50.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-51.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-52.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-53.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-54.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-55.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-56.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-57.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-58.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-6.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-7.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-8.fa": {
+      "identical": true,
+      "detail": ""
+    },
+    "R2-9.fa": {
+      "identical": true,
+      "detail": ""
+    }
+  },
+  "statistics": {
+    "original": [
+      {
+        "sample": "Polyclonal_0pct",
+        "barcoded": 13051204,
+        "LTRed": 12364711,
+        "linkered": 13034423,
+        "ltredlinkered": 12349244,
+        "lenTrim": 10541940,
+        "vTrimed": 10522503,
+        "uniqL": 802565,
+        "uniqP": 1711105,
+        "uniqP30": 56958,
+        "lLen": 111,
+        "pLen": 112
+      }
+    ],
+    "corrected": [
+      {
+        "sample": "Polyclonal_0pct",
+        "barcoded": 13051204,
+        "LTRed": 12364711,
+        "linkered": 13034423,
+        "ltredlinkered": 12349244,
+        "lenTrim": 10541940,
+        "vTrimed": 10522503,
+        "uniqL": 802565,
+        "uniqP": 1711105,
+        "uniqP30": 56958,
+        "lLen": 111,
+        "pLen": 112
+      }
+    ]
+  },
+  "scope": "Full RUN809 0%: all curated sequence text/chunks, paired-read keys and complete primer-ID contents; upstream effective linker marker"
+}

@@ -1,0 +1,10 @@
+{
+  "hg38": {
+    "twobit": "/absolute/path/hg38_original.2bit",
+    "sha256": "REPLACE_WITH_REFERENCE_SHA256",
+    "seqinfo_rds": "/absolute/path/hg38_original_seqinfo.rds",
+    "seqinfo_sha256": "REPLACE_WITH_SEQINFO_SHA256",
+    "refseq_rds": "/absolute/path/hg38_frozen_bushman_refseq.rds",
+    "sequence_policy": "exact original full-assembly sequence dictionary, including alternate/fix sequences"
+  }
+}

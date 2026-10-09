@@ -1,0 +1,198 @@
+{
+  "status": "passed",
+  "baseline": "workspace/bushman_fast/validation/release_original_replay_20261009/synthetic_final/original_results",
+  "optimized": "workspace/bushman_fast/validation/release_original_replay_20261009/synthetic_final/compact_results",
+  "samples": ["A", "B", "Empty"],
+  "checks": [
+    {
+      "item": "A/keys.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "A/stats.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "A/primerIDData.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "A/hits.R1.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "A/hits.R2.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "A/allSites.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "A/sites.final.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "A/multihitData.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "A/chimeraData.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "B/keys.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "B/stats.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "B/primerIDData.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "B/hits.R1.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "B/hits.R2.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "B/allSites.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "B/sites.final.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "B/multihitData.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "B/chimeraData.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "Empty/keys.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "Empty/stats.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "Empty/allSites.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "Empty/sites.final.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "Empty/multihitData.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "Empty/chimeraData.RData",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "A/R1-1.fa",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "A/R2-1.fa",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "B/R1-1.fa",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "B/R2-1.fa",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "hg38__truth/abundance_status.tsv",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "hg38__truth/original_annotated_sites.rds",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "hg38__truth/original_estimator_input.tsv",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "hg38__truth/original_multihit_abundance.tsv",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "hg38__truth/original_population_status.tsv",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "hg38__truth/original_sonic_fits.rds",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "hg38__truth/original_unique_abundance.rds",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "hg38__truth/original_unique_abundance.tsv",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "hg38__truth/pooled_sites.rds",
+      "identical": true,
+      "detail": ""
+    },
+    {
+      "item": "hg38__truth/sample_stats.tsv",
+      "identical": true,
+      "detail": ""
+    }
+  ]
+}

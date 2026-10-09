@@ -21,22 +21,18 @@ args = parser.parse_args()
 
 samplesheet = args.samplesheet
 
-#load samplesheet
-with open(samplesheet, 'r') as f:
-    # Skip lines until we find [Data]
-    for line in f:
-        if line.strip() == '[Data]':
-            break
-
-    reader = csv.DictReader(f)
-    rows = list(reader)
-    fieldnames = reader.fieldnames
+# Shared parser accepts Illumina [Data] sections or a plain CSV header.
+from validate_inputs import read_samplesheet
+rows = read_samplesheet(samplesheet)
+fieldnames = list(rows[0])
 
 #get all index lengths
 index_lengths = [len(row['index']) for row in rows]
 max_length = max(index_lengths)
 min_length = min(index_lengths)
 
+if max_length-min_length>1:
+    raise ValueError('Only a one-base index-length difference is supported')
 modified_samples = []
 
 #if we find a sample with a longer index, we will remove a nt

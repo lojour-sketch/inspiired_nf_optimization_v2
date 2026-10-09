@@ -9,7 +9,12 @@ process CREATE_demux_samplesheet_local {
     path("DemuxSampleSheet.tsv"), emit: demux_sheet
 
     script:
+    def reverseHash = java.security.MessageDigest.getInstance('SHA-256').digest(file("${moduleDir}/../../../bin/create_demux_samplesheet_rev_comp_index2.py").bytes).encodeHex()
+    def sourceHash = java.security.MessageDigest.getInstance('SHA-256').digest(file("${moduleDir}/../../../bin/create_demux_samplesheet.py").bytes).encodeHex()
+    def parserHash = java.security.MessageDigest.getInstance('SHA-256').digest(file("${moduleDir}/../../../bin/validate_inputs.py").bytes).encodeHex()
     """
+    # source_sha256=${sourceHash}; parser_sha256=${parserHash}
+    # reverse_source_sha256=${reverseHash}
     if [ "${params.instrument}" == "MiSeq" ]
     then
         create_demux_samplesheet.py --samplesheet ${normalized_samplesheet}

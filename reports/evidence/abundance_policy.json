@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "Sonic_minimum_bp": 20,
+  "original_short_fragment_rejection": "min(lengths) >= min.length is not TRUE",
+  "default_policy": "fail",
+  "explicit_record_policy": "publishes missing abundance without an estimate",
+  "cases": ["strict rejection", "explicit partial publication", "valid strict publication", "valid record publication", "legacy strict default"]
+}

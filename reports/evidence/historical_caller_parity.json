@@ -1,0 +1,42 @@
+{
+  "status": "passed_with_documented_chimera_archive_fix",
+  "scope": "Full historical RUN809 0% prepared sequences and all 85 archived original BLAT chunks; all insertion-site, multihit, read-key, reference and caller-statistic payloads",
+  "checks": {
+    "keys.RData": {
+      "identical": true,
+      "detail": ""
+    },
+    "stats.RData": {
+      "identical": true,
+      "detail": ""
+    },
+    "hits.R1.RData": {
+      "identical": true,
+      "detail": ""
+    },
+    "hits.R2.RData": {
+      "identical": true,
+      "detail": ""
+    },
+    "allSites.RData": {
+      "identical": true,
+      "detail": ""
+    },
+    "sites.final.RData": {
+      "identical": true,
+      "detail": ""
+    },
+    "multihitData.RData": {
+      "identical": true,
+      "detail": ""
+    }
+  },
+  "documented_difference": {
+    "read_info_identical": true,
+    "original_archived_alignments": 4,
+    "corrected_archived_alignments": 14760,
+    "retained_chimera_read_rows": 14760,
+    "original_prefix_identical": true,
+    "reason": "Original length(data.frame) iterates columns; nrow(data.frame) archives every retained chimera row. This does not alter insertion-site calls or chimera classification."
+  }
+}

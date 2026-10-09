@@ -1,0 +1,137 @@
+{
+  "origin": "BushmanLab INSPIIRED committed sources",
+  "files": [
+    {
+      "component": "intSiteCaller",
+      "revision": "da64809fb1c9d2068ca2944a7ab3c6148cdf83d9",
+      "file": "LICENSE",
+      "sha256": "14bcec616342148df5caa687891684b0026b2f09df19ec168c9457bb4c53c9e8"
+    },
+    {
+      "component": "intSiteCaller",
+      "revision": "da64809fb1c9d2068ca2944a7ab3c6148cdf83d9",
+      "file": "intSiteLogic.R",
+      "sha256": "b2038e6db8d2c70bdf05f8cd10bf975c8be317abc022ac633ff85fdc100e68b9"
+    },
+    {
+      "component": "intSiteCaller",
+      "revision": "da64809fb1c9d2068ca2944a7ab3c6148cdf83d9",
+      "file": "hiReadsProcessor.R",
+      "sha256": "b2b5b62f6ed1c0a670f50db85e5986e3ff09292c7a480ff602a4dd7c2df6cdc9"
+    },
+    {
+      "component": "intSiteCaller",
+      "revision": "da64809fb1c9d2068ca2944a7ab3c6148cdf83d9",
+      "file": "standardization_based_on_clustering.R",
+      "sha256": "f702ef53dfc52f550077c52f818a0f9c4355908a47a9b26bb5933a799018baa1"
+    },
+    {
+      "component": "intSiteCaller",
+      "revision": "da64809fb1c9d2068ca2944a7ab3c6148cdf83d9",
+      "file": "quality_filter.R",
+      "sha256": "2890e16aae0b5d0100439f49ef91b9ea0e98384a867066f0fce40958b7fa15d8"
+    },
+    {
+      "component": "intSiteCaller",
+      "revision": "da64809fb1c9d2068ca2944a7ab3c6148cdf83d9",
+      "file": "read_psl_files.R",
+      "sha256": "b8938c8c00f2edc936f0c879105ad40bf19570fc83f26f749729fddd71f7e154"
+    },
+    {
+      "component": "intSiteCaller",
+      "revision": "da64809fb1c9d2068ca2944a7ab3c6148cdf83d9",
+      "file": "programFlow.R",
+      "sha256": "904f06169098b419342c94181979e32b12180f231713312448775440c01ba9a1"
+    },
+    {
+      "component": "intSiteCaller",
+      "revision": "da64809fb1c9d2068ca2944a7ab3c6148cdf83d9",
+      "file": "linker_common.R",
+      "sha256": "4010d9fdbe498f22a3e531f95bb232b5b1f77d672ec9fdce24d4d4e6312e39ff"
+    },
+    {
+      "component": "intSiteCaller",
+      "revision": "da64809fb1c9d2068ca2944a7ab3c6148cdf83d9",
+      "file": "errorCorrectIndices/golay.py",
+      "sha256": "4d2f38bbe92c46f4576030bd10b701215d4fe228bd6cc8b0690cab9c9fdfc7b2"
+    },
+    {
+      "component": "geneTherapyPatientReportMaker",
+      "revision": "1dca0a9ed5fdc23260d0b575e4bd414179f07531",
+      "file": "estimatedAbundance.R",
+      "sha256": "9495683e0c0fe833db49db2146d01fb6105c132d5870915dccfb27e84c6503fe"
+    },
+    {
+      "component": "geneTherapyPatientReportMaker",
+      "revision": "1dca0a9ed5fdc23260d0b575e4bd414179f07531",
+      "file": "populationInfo.R",
+      "sha256": "5e2d0870c02827afb75e235d20e043e40f1d75803f038dddeebce372a316ef30"
+    },
+    {
+      "component": "geneTherapyPatientReportMaker",
+      "revision": "1dca0a9ed5fdc23260d0b575e4bd414179f07531",
+      "file": "abundanceFilteringUtils.R",
+      "sha256": "ffe62a00bd9e2754846ab92597f4d8bb82906c5ef7de7a5fd1ec6e43925bf875"
+    },
+    {
+      "component": "geneTherapyPatientReportMaker",
+      "revision": "1dca0a9ed5fdc23260d0b575e4bd414179f07531",
+      "file": "ref_seq.R",
+      "sha256": "e16a460cd86d329cff6fc5f93f18b21ab2278f0ddb7731732640b4a8beeae5e1"
+    },
+    {
+      "component": "geneTherapyPatientReportMaker",
+      "revision": "1dca0a9ed5fdc23260d0b575e4bd414179f07531",
+      "file": "utilities.R",
+      "sha256": "9ba663f089428508c1655b5dded38815f2b75de8ce1e60b5b3acaa1506d82bd5"
+    },
+    {
+      "component": "geneTherapyPatientReportMaker",
+      "revision": "1dca0a9ed5fdc23260d0b575e4bd414179f07531",
+      "file": "allonco_no_pipes.csv",
+      "sha256": "04f878a8d001f5b3479a1d90c1583721bd27d97c1efb9426af3d0eb7e4e2b3ac"
+    },
+    {
+      "component": "geneTherapyPatientReportMaker",
+      "revision": "1dca0a9ed5fdc23260d0b575e4bd414179f07531",
+      "file": "allonco_no_pipes.mm.csv",
+      "sha256": "b38a37235efd1f832b3132bc4da8303c0be2ad86eab580d27695f6dc6133797a"
+    },
+    {
+      "component": "geneTherapyPatientReportMaker",
+      "revision": "1dca0a9ed5fdc23260d0b575e4bd414179f07531",
+      "file": "humanLymph.tsv",
+      "sha256": "63848f643b929d96ed7f8b32b62f0bb4af269beb4b268b051240c014bdd30bc0"
+    },
+    {
+      "component": "geneTherapyPatientReportMaker",
+      "revision": "1dca0a9ed5fdc23260d0b575e4bd414179f07531",
+      "file": "makeGeneTherapyPatientReport.R",
+      "sha256": "d44cbadc647d591ea9c18bead39d32d1fd4d183c9cc2fa7d195319c95346556f"
+    },
+    {
+      "component": "geneTherapyPatientReportMaker",
+      "revision": "1dca0a9ed5fdc23260d0b575e4bd414179f07531",
+      "file": "read_site_totals.R",
+      "sha256": "354e288adc1efb7d9dbd3e08403ece2d3ae3a183df3e54925c61dbd805ce5213"
+    },
+    {
+      "component": "geneTherapyPatientReportMaker",
+      "revision": "1dca0a9ed5fdc23260d0b575e4bd414179f07531",
+      "file": "specimen_management.R",
+      "sha256": "05f1a22e7d941be5ce7baa802a9b419439d03a03be82e426f26e2e1fcc300413"
+    },
+    {
+      "component": "geneTherapyPatientReportMaker",
+      "revision": "1dca0a9ed5fdc23260d0b575e4bd414179f07531",
+      "file": "LICENSE",
+      "sha256": "14bcec616342148df5caa687891684b0026b2f09df19ec168c9457bb4c53c9e8"
+    },
+    {
+      "component": "intSiteCaller",
+      "revision": "da64809fb1c9d2068ca2944a7ab3c6148cdf83d9",
+      "file": "read_sample_files.R",
+      "sha256": "112a2101d979fe19fd64d6af121f995d1bb2737677ac57cbdf36aebde0dd4450"
+    }
+  ]
+}

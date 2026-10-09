@@ -1,0 +1,8 @@
+{
+  "hg38": {
+    "twobit": "/absolute/path/to/the/original/hg38.2bit",
+    "sha256": "replace_with_the_actual_reference_sha256",
+    "sequence_policy": "Exact original reference sequence dictionary, including its alternate/fix/random sequences",
+    "refseq_rds": "/absolute/path/to/frozen_assembly_matched_RefSeq_GRanges.rds"
+  }
+}

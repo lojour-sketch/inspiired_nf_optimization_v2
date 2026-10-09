@@ -1,0 +1,5 @@
+{
+  "pipeline": "bushman_fast",
+  "version": "1.2.0",
+  "analysis_core": "original Bushman scientific logic; compact row-membership pairing; corrected effective linker metadata"
+}

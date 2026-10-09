@@ -1,0 +1,51 @@
+{
+  "updated_at_utc": "2026-10-09T11:57:23.287223+00:00",
+  "release_statement": "Tested release candidate: corrected full historical RUN809 0% preparation, caller and matched Sonic checks passed; synthetic original/indexed/compact workflows and default compact execution passed. Full seven-sample corrected RUN809 and independent biological validation remain outstanding.",
+  "checks": [
+    {
+      "check": "Effective linker metadata",
+      "status": "passed",
+      "scope": "Committed upstream linker_common.R: leading-N, two-flank and no-N helper behavior"
+    },
+    {
+      "check": "Synthetic integration",
+      "status": "passed",
+      "scope": "38 complete payload comparisons for each indexed/compact caller versus original; full Nextflow plot step"
+    },
+    {
+      "check": "Final clean-tree regression",
+      "status": "passed",
+      "scope": "Original/indexed/compact full synthetic workflows; 38 scientific/report payload comparisons for each optimized implementation; plotting, effective metadata, 60 membership/100 intersection randomized oracles."
+    },
+    {
+      "check": "Final default-workflow smoke test",
+      "status": "passed",
+      "scope": "Clean release checkout; default compact caller; local executor profile; complete synthetic workflow and integrated plots. Slurm wrapper job 537505 completed successfully."
+    },
+    {
+      "check": "Full historical 0% caller",
+      "status": "passed, with documented chimera archive repair",
+      "scope": "All seven full scientific caller payloads identical, including reference labels; original four-entry chimera prefix preserved and all 14,760 classified rows archived."
+    },
+    {
+      "check": "Corrected full 0% preparation",
+      "status": "passed",
+      "scope": "All 85 complete curated FASTA chunks, exact paired-read keys, complete primer-ID contents and 12 preparation-statistic fields match historical original."
+    },
+    {
+      "check": "Corrected 0% Sonic report",
+      "status": "passed",
+      "scope": "Matched original single-specimen 5 bp report: 74 sites, rounded abundance 99038, coordinate/abundance/rank exact; proportions agree to 1e-12."
+    },
+    {
+      "check": "All-seven corrected RUN809",
+      "status": "not run",
+      "scope": "Existing seven reports are pre-correction; a fresh corrected run remains necessary"
+    },
+    {
+      "check": "Independent biological accuracy",
+      "status": "not established",
+      "scope": "Mixture meaning known; independent insertion coordinates, VCN and replicates not supplied"
+    }
+  ]
+}

@@ -8,8 +8,8 @@ process BCL2FASTQ_local {
     tuple val(sample), val(primer), val(ltrbit), val(largeLTRFrag), val(project), val(mingDNA), val(meta), path(samplesheet), path(run_dir)
 
     output:
-    tuple val(meta), path("results/${project}/*/*_R*_001.fastq.gz")        , emit: fastq
-    tuple val(meta), path("results/${project}/*/*_I*_001.fastq.gz")       , optional:true, emit: fastq_idx
+    tuple val(meta), path("results/*/*/*_R*_001.fastq.gz")        , emit: fastq
+    tuple val(meta), path("results/*/*/*_I*_001.fastq.gz")       , optional:true, emit: fastq_idx
     tuple val(meta), path("results/Undetermined_S0_R*_001.fastq.gz")  , optional:true, emit: undetermined
     tuple val(meta), path("results/Undetermined_S0_I*_001.fastq.gz")  , optional:true, emit: undetermined_idx
     tuple val(meta), path("results/Reports")                             , emit: reports
@@ -28,7 +28,7 @@ process BCL2FASTQ_local {
         -r 25 \\
         -p 25 \\
         -w 25 \\
-        --use-bases-mask I20Y159,I12,Y143 \\
+        --use-bases-mask !{params.bcl_bases_mask ?: 'I20Y159,I12,Y143'} \\
         --sample-sheet !{samplesheet} \\
 
                  
@@ -36,33 +36,16 @@ process BCL2FASTQ_local {
     cp -r !{run_dir}/InterOp .
 
 
-    if [ -d "results/!{project}" ]; then
-        cd "results/!{project}"
-        
-        # Check if there are fastq.gz files directly in this directory
-        if ls *.fastq.gz 1> /dev/null 2>&1; then
-            echo "Files found directly in project dir - reorganizing into subdirectories..."
-            
-            for file in *.fastq.gz; do
-                # Extract sample ID (everything before _S[0-9])
-                sample_id=$(echo "$file" | sed 's/_S[0-9]*.*//')
-                
-                echo "Moving $file to $sample_id/"
-                mkdir -p "$sample_id"
-                mv "$file" "$sample_id/"
-            done
-            
-            echo "Reorganization complete"
-        
-            # Show final structure
-            echo "Final structure:"
-            ls -la
-        else
-            echo "Files already in subdirectories - no reorganization needed"
-        fi
-    else
-        echo "Warning: results/!{project} directory not found"
-    fi
+    # Route every declared project, including bcl2fastq's flat project layout.
+    for project_dir in results/*; do
+        [ -d "$project_dir" ] || continue
+        for file in "$project_dir"/*.fastq.gz; do
+            [ -f "$file" ] || continue
+            sample_id=$(basename "$file" | sed 's/_S[0-9]*.*//')
+            mkdir -p "$project_dir/$sample_id"
+            mv "$file" "$project_dir/$sample_id/"
+        done
+    done
 
     '''
 

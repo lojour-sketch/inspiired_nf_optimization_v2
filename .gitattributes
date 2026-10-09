@@ -1,0 +1,13 @@
+# Preserve frozen upstream bytes and hashes on every checkout platform.
+vendor/** -text -whitespace
+# Trailing tabs can represent intentionally empty fields in scientific tables.
+*.tsv text eol=lf -whitespace
+*.csv text eol=lf
+*.nf text eol=lf
+*.py text eol=lf
+*.R text eol=lf
+*.c text eol=lf
+*.sh text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.html text eol=lf

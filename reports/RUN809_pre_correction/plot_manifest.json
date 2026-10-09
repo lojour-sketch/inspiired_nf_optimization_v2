@@ -1,0 +1,11 @@
+{
+  "state": "completed",
+  "analysis_label": "RUN809: pre-correction results (8 October 2026)",
+  "validation_label": "Linker orientation mismatch under correction; these results are provisional and must not validate the corrected release.",
+  "site_window_bp": 5,
+  "specimens": ["Polyclonal_100pct", "Polyclonal_99pct", "Polyclonal_95pct", "Polyclonal_90pct", "Polyclonal_75pct", "Polyclonal_50pct", "Polyclonal_0pct"],
+  "figures": ["fig_points_Polyclonal_100pct.pdf", "clonality_Polyclonal_100pct.pdf", "annotated_points_Polyclonal_100pct.tsv", "fig_points_Polyclonal_99pct.pdf", "clonality_Polyclonal_99pct.pdf", "annotated_points_Polyclonal_99pct.tsv", "fig_points_Polyclonal_95pct.pdf", "clonality_Polyclonal_95pct.pdf", "annotated_points_Polyclonal_95pct.tsv", "fig_points_Polyclonal_90pct.pdf", "clonality_Polyclonal_90pct.pdf", "annotated_points_Polyclonal_90pct.tsv", "fig_points_Polyclonal_75pct.pdf", "clonality_Polyclonal_75pct.pdf", "annotated_points_Polyclonal_75pct.tsv", "fig_points_Polyclonal_50pct.pdf", "clonality_Polyclonal_50pct.pdf", "annotated_points_Polyclonal_50pct.tsv", "fig_points_Polyclonal_0pct.pdf", "clonality_Polyclonal_0pct.pdf", "annotated_points_Polyclonal_0pct.tsv"],
+  "inputs_modified": false,
+  "abundance_refit": false,
+  "unavailable_status_retained": true
+}

@@ -1,0 +1,17 @@
+{
+  "status": "completed",
+  "review_date": "2026-10-09",
+  "superseded_source_entries_removed": 43,
+  "old_pilot_generated_directories_removed": 4,
+  "duplicate_raw_run_copies_removed": 2,
+  "duplicate_copy_apparent_bytes": 111160608596,
+  "estimated_exclusive_allocated_bytes": 111164250112,
+  "preserved": [
+    "Original raw RUN809 inputs",
+    "Historical original Bushman archive",
+    "Current scientific results and validation evidence",
+    "Active frozen Nextflow snapshots",
+    "Exact runtime and references"
+  ],
+  "note": "Apparent file sizes are not the same as physically reclaimed space. Raw inputs and current scientific comparison results are excluded from the Git package, not deleted."
+}

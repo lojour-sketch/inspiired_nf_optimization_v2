@@ -1,0 +1,5 @@
+{
+  "status": "passed",
+  "checks": ["randomized_locus_membership_with_NA_empty_duplicates_and_reused_loci", "multihit_cross_component_ID_scope_and_sorted_row_expansion", "chimera_all_hits_original_multiplicity_names_and_R2_R1_order", "streaming_PSL_types_empty_single_and_ordered_multi_file_parity", "five_frozen_caller_anchors"],
+  "random_seeds": 40
+}

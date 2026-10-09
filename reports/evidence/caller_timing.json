@@ -1,0 +1,15 @@
+{
+  "sample": "Polyclonal_0pct",
+  "elapsed_seconds": 555.174,
+  "phase_seconds": {
+    "PSL_loading": 295.124,
+    "locus_pairing": 52.779,
+    "chimera_expansion": 25.277,
+    "unique_read_expansion": 125.692,
+    "multihit_graph_and_expansion": 32.603
+  },
+  "input_curated_pairs": 10522503,
+  "psl_chunks": 85,
+  "scope": "Caller worker timing only; archived original preparation/alignments; excludes file staging and fresh genomic mapping",
+  "R": "4.4.1"
+}

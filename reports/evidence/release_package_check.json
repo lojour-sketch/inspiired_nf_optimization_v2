@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "files_checked": 155,
+  "local_html_links_checked": 44,
+  "upstream_files_verified": 22,
+  "scope": "Package contents, Python/shell syntax, JSON, frozen source hashes and portable report links; scientific tests recorded separately",
+  "failures": []
+}

@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "oracle": "committed upstream linker_common.R",
+  "cases": [
+    {
+      "linkerSequence": "NNNNNNNNNNNNCTCCGCTTAAGGGACT",
+      "python_effective": "AGTCCCTTAAGCGGAG"
+    },
+    {
+      "linkerSequence": "AGCAGGTCCGAAATTCTCGGNNNNNNNNNNNNCTCCGCTTAAGGGACT",
+      "python_effective": "AGTCCCTTAAGCGGAG"
+    },
+    {
+      "linkerSequence": "ACGTACGTACGTACGTACGT",
+      "python_effective": "ACGTACGTACGTACG"
+    },
+    {
+      "linkerSequence": "NNNNNNNNNNNNNACGTACGTACGTACGTA",
+      "python_effective": "TACGTACGTACGTACGT"
+    }
+  ],
+  "original_effective": ["AGTCCCTTAAGCGGAG", "AGTCCCTTAAGCGGAG", "ACGTACGTACGTACG", "TACGTACGTACGTACGT"],
+  "RUN809_effective_marker": "AGTCCCTTAAGCGGAG",
+  "raw_CSV_forward_marker": "CTCCGCTTAAGGGACT"
+}
