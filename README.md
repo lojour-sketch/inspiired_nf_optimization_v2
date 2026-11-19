@@ -2,7 +2,7 @@
 
 This release modernizes the original Bushman insertion-site analysis using Nextflow and a frozen runtime. It retains independent BLAT alignments, the original candidate-pair filters, multihit connected components, unique-site Sonic abundance, and the original coordinate-standardization rules. The default caller is the optimized `compact` implementation; `--caller_impl original` runs the frozen scientific expressions with the same compatibility adapters.
 
-Read the [objective and original workflow structure](docs/objectives_and_structure.md), [module-by-module comparison](docs/pipeline_changes.md), [validation report](reports/pipeline_changes_report.html), and [results guide](docs/results.md). The report distinguishes compatibility adaptations, software bug fixes, execution improvements, and optional analysis changes. Historical RUN809 outputs created before the effective-linker correction are explicitly provisional and require rerunning.
+Read the [objective and original workflow structure](docs/objectives_and_structure.md), [module-by-module comparison](docs/pipeline_changes.md), [validation report](reports/pipeline_changes_report.html), and [results guide](docs/results.md). The report distinguishes compatibility adaptations, software bug fixes, execution improvements, and optional analysis changes. 
 
 ## Install the tested environment
 
